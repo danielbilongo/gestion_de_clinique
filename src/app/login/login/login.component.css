@@ -1,0 +1,7 @@
+/* Styles migrés vers Tailwind CSS dans le template du composant */
+
+/* Styles pour que la page de login occupe toute la page */
+:host {
+  @apply block min-h-screen w-full flex items-center justify-center p-5 box-border fixed top-0 left-0 z-[1000];
+  background: rgb(228, 238, 238);
+}

@@ -1,0 +1,14 @@
+<div class="p-6 max-w-2xl mx-auto">
+  <h2 class="text-2xl font-bold text-gray-800 mb-6">Chat</h2>
+  <div class="bg-gray-50 rounded-lg min-h-[200px] max-h-[350px] overflow-y-auto mb-3 p-3">
+    <div *ngFor="let msg of messages" class="mb-2 p-1.5 rounded-md flex items-center gap-2" [ngClass]="{ 'bg-[#e8f4f8] text-[#1fa183] self-end': msg.from === 'Secrétaire', 'bg-white text-gray-800 self-start': msg.from !== 'Secrétaire' }">
+      <span class="font-bold">{{ msg.from }} :</span>
+      <span>{{ msg.text }}</span>
+      <span class="text-sm text-gray-500 ml-auto">{{ msg.time }}</span>
+    </div>
+  </div>
+  <div class="flex gap-2">
+    <input [(ngModel)]="newMessage" (keyup.enter)="sendMessage()" placeholder="Votre message..." class="flex-1 px-2 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#1fa183] focus:border-transparent" />
+    <button (click)="sendMessage()" class="px-4 py-2 rounded-md bg-[#1fa183] text-white border-none cursor-pointer hover:bg-[#168a73] transition-colors duration-200">Envoyer</button>
+  </div>
+</div>

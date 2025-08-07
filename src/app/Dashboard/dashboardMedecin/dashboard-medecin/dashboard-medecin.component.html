@@ -1,0 +1,56 @@
+<app-header
+  pageTitle="Tableau de Bord Médecin"
+  pageSubtitle="Vue d'ensemble de votre activité">
+</app-header>
+
+<div class="dashboard-medecin-content">
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-icon">🧑‍🤝‍🧑</div>
+      <div class="stat-value">{{ totalPatients }}</div>
+      <div class="stat-label">Patients suivis</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">📅</div>
+      <div class="stat-value">{{ rdvToday }}</div>
+      <div class="stat-label">RDV aujourd'hui</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">⏳</div>
+      <div class="stat-value">{{ upcomingRdv }}</div>
+      <div class="stat-label">À venir</div>
+    </div>
+  </div>
+
+  <div class="dashboard-sections">
+    <div class="section-card">
+      <h3>Prochains Rendez-vous</h3>
+      <ul class="rdv-list">
+        <li *ngFor="let rdv of prochainsRdv">
+          <span class="rdv-time">{{ rdv.heure }}</span>
+          <span class="rdv-patient">{{ rdv.patient }}</span>
+          <span class="rdv-type">{{ rdv.type }}</span>
+        </li>
+      </ul>
+    </div>
+    <div class="section-card">
+      <h3>Patients à risque</h3>
+      <ul class="risk-list">
+        <li *ngFor="let patient of patientsRisque">
+          <span class="risk-patient">{{ patient.nom }}</span>
+          <span class="risk-info">{{ patient.info }}</span>
+        </li>
+      </ul>
+    </div>
+    <div class="section-card">
+      <h3>Activité récente</h3>
+      <ul class="activity-list">
+        <li *ngFor="let act of activiteRecente">
+          <span class="activity-icon">{{ act.icon }}</span>
+          <span class="activity-desc">{{ act.desc }}</span>
+          <span class="activity-time">{{ act.time }}</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>

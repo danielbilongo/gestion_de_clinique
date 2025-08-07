@@ -1,0 +1,207 @@
+<div class="user-management-section card">
+  <h2>Gestion des comptes utilisateurs</h2>
+  
+  <!-- Loading indicator -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Chargement...</p>
+  </div>
+  
+  <!-- Error message -->
+  <div *ngIf="error" class="error-message">
+    <p>{{ error }}</p>
+    <button (click)="loadUsers()" class="btn-retry">Réessayer</button>
+  </div>
+  
+  <!-- Formulaire d'ajout d'utilisateur -->
+  <div class="form-container" *ngIf="showAddForm">
+    <h3>Ajouter un nouvel utilisateur</h3>
+    <form (ngSubmit)="saveUser()" #addForm="ngForm">
+      <div class="form-group">
+        <label for="nom">Nom complet *</label>
+        <input type="text" id="nom" name="nom" [(ngModel)]="newUser.nom" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="email">Email *</label>
+        <input type="email" id="email" name="email" [(ngModel)]="newUser.email" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="role">Rôle *</label>
+        <select id="role" name="role" [(ngModel)]="newUser.role" required>
+          <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="password">Mot de passe</label>
+        <input type="password" id="password" name="password" [(ngModel)]="newUser.password" minlength="6">
+      </div>
+      
+      <div class="form-group">
+        <label for="telephone">Téléphone *</label>
+        <input type="tel" id="telephone" name="telephone" [(ngModel)]="newUser.telephone" required>
+      </div>
+      
+      <!-- Champs spécifiques au médecin -->
+      <div class="form-group" *ngIf="newUser.role === 'Médecin'">
+        <label for="specialite">Spécialité *</label>
+        <input type="text" id="specialite" name="specialite" [(ngModel)]="newUser.specialite" [required]="newUser.role === 'Médecin'">
+      </div>
+      
+      <!-- Champs spécifiques au patient -->
+      <div *ngIf="newUser.role === 'Patient'">
+        <div class="form-group">
+          <label for="adresse">Adresse</label>
+          <textarea id="adresse" name="adresse" [(ngModel)]="newUser.adresse" rows="3"></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label for="dateNaissance">Date de naissance</label>
+          <input type="date" id="dateNaissance" name="dateNaissance" [(ngModel)]="newUser.dateNaissance">
+        </div>
+        
+        <div class="form-group">
+          <label for="numeroSecuriteSociale">Numéro de sécurité sociale</label>
+          <input type="text" id="numeroSecuriteSociale" name="numeroSecuriteSociale" [(ngModel)]="newUser.numeroSecuriteSociale">
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="statut">Statut</label>
+        <select id="statut" name="statut" [(ngModel)]="newUser.statut">
+          <option *ngFor="let statut of statuts" [value]="statut">{{ statut }}</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="photo">Photo de profil</label>
+        <div class="photo-upload-container">
+          <div class="photo-preview">
+            <img [src]="newUser.photo || getDefaultPhoto(newUser.role)" alt="Photo de profil" class="user-photo">
+          </div>
+          <input type="file" id="photo" name="photo" accept="image/*" (change)="onPhotoSelected($event, newUser)" class="photo-input">
+          <label for="photo" class="photo-upload-btn">Choisir une photo</label>
+        </div>
+      </div>
+      
+      <div class="form-actions">
+        <button type="submit" class="btn-save">Enregistrer</button>
+        <button type="button" class="btn-cancel" (click)="cancelForm()">Annuler</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Formulaire de modification d'utilisateur -->
+  <div class="form-container" *ngIf="showEditForm && editingUser">
+    <h3>Modifier l'utilisateur</h3>
+    <form (ngSubmit)="updateUser()" #editForm="ngForm">
+      <div class="form-group">
+        <label for="edit-nom">Nom complet *</label>
+        <input type="text" id="edit-nom" name="nom" [(ngModel)]="editingUser.nom" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="edit-email">Email *</label>
+        <input type="email" id="edit-email" name="email" [(ngModel)]="editingUser.email" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="edit-role">Rôle *</label>
+        <select id="edit-role" name="role" [(ngModel)]="editingUser.role" required>
+          <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="edit-password">Nouveau mot de passe (laisser vide pour ne pas changer)</label>
+        <input type="password" id="edit-password" name="password" [(ngModel)]="editingUser.password" minlength="6">
+      </div>
+      
+      <div class="form-group">
+        <label for="edit-statut">Statut</label>
+        <select id="edit-statut" name="statut" [(ngModel)]="editingUser.statut">
+          <option *ngFor="let statut of statuts" [value]="statut">{{ statut }}</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="edit-photo">Photo de profil</label>
+        <div class="photo-upload-container">
+          <div class="photo-preview">
+            <img [src]="editingUser.photo || getDefaultPhoto(editingUser.role)" alt="Photo de profil" class="user-photo">
+          </div>
+          <input type="file" id="edit-photo" name="photo" accept="image/*" (change)="onPhotoSelected($event, editingUser)" class="photo-input">
+          <label for="edit-photo" class="photo-upload-btn">Changer la photo</label>
+        </div>
+      </div>
+      
+      <div class="form-actions">
+        <button type="submit" class="btn-save">Mettre à jour</button>
+        <button type="button" class="btn-cancel" (click)="cancelForm()">Annuler</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Bouton pour ajouter un utilisateur (visible seulement si aucun formulaire n'est ouvert) -->
+  <button class="btn-add-user" (click)="addUser()" *ngIf="!showAddForm && !showEditForm">
+    Ajouter un nouvel utilisateur
+  </button>
+
+  <div class="mb-4" *ngIf="!showAddForm && !showEditForm">
+    <div class="relative flex items-center w-full max-w-80">
+      <input type="text" [(ngModel)]="search" placeholder="Rechercher un utilisateur..." class="w-full py-2.5 pr-10 pl-4 rounded-[18px] border-[1.5px] border-[#1fa183] bg-[#fcfffe] text-[#212121] text-base transition-all duration-200 shadow-[0_2px_8px_rgba(31,161,131,0.07)] focus:outline-none focus:border-[#1fa183] focus:shadow-[0_0_0_2px_rgba(31,161,131,0.2)]" />
+      <span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#1fa183] text-xl pointer-events-none opacity-85">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M20 20l-3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </span>
+    </div>
+  </div>
+
+  <!-- Tableau des utilisateurs -->
+  <table class="users-table" *ngIf="!showAddForm && !showEditForm">
+    <thead>
+      <tr>
+        <th>Photo</th>
+        <th>Nom Complet</th>
+        <th>Rôle</th>
+        <th>Email</th>
+        <th>Statut</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let user of filteredUsers">
+        <td>
+          <div class="user-photo-container">
+            <img [src]="user.photo || getDefaultPhoto(user.role)" [alt]="user.nom" class="user-photo-table">
+          </div>
+        </td>
+        <td>{{ user.nom }}</td>
+        <td>{{ user.role }}</td>
+        <td><a href="mailto:{{ user.email }}">{{ user.email }}</a></td>
+        <td>
+          <span class="status-badge" [class]="'status-' + user.statut.toLowerCase()">
+            {{ user.statut }}
+          </span>
+        </td>
+        <td>
+          <button class="btn-action modif" (click)="editUser(user)" *ngIf="user.statut=='Active'">Modifier</button>
+          <button class="btn-action suppr" (click)="deleteUser(user)" *ngIf="user.statut=='Active' && user.role=='Secrétaire'">Supprimer</button>
+          <button class="btn-action desact" (click)="deactivate(user)" *ngIf="user.statut=='Active' && user.role=='Médecin'">Désactiver</button>
+          <button class="btn-action activ" (click)="activate(user)" *ngIf="user.statut!='Active'">Activer</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="notifications-section" *ngIf="!showAddForm && !showEditForm">
+    <h3>Fil d'actualité & Notifications récentes</h3>
+    <ul>
+      <li><span class="notification-title">Nouveau Compte Médecin:</span> Ajouté par Mr. Kamdem</li>
+      <li><span class="notification-title">Mise à jour du profil:</span> de la secrétaire: Marie</li>
+      <li><span class="notification-title">Alerte:</span> Système de base de données à 80% de capacité</li>
+      <li>15 utilisateurs en attente de validation</li>
+    </ul>
+  </div>
+</div>

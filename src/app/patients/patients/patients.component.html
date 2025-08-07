@@ -1,0 +1,55 @@
+<div class="p-6 max-w-4xl mx-auto">
+  <h2 class="text-2xl font-bold text-gray-800 mb-6">Gestion des Patients</h2>
+  <div class="flex gap-3 mb-5">
+    <input type="text" [(ngModel)]="search" placeholder="Rechercher un patient..." class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1fa183] focus:border-transparent" />
+    <button (click)="addPatient()" class="px-4 py-2 bg-[#1fa183] text-white rounded-lg hover:bg-[#168a73] transition-colors duration-200 font-medium">+ Ajouter</button>
+  </div>
+
+  <table class="w-full border-collapse bg-white rounded-lg overflow-hidden shadow-[0_2px_8px_rgba(31,161,131,0.08)]" *ngIf="!showForm">
+    <thead>
+      <tr>
+        <th class="px-2 py-2.5 bg-[#e8f4f8] text-[#1fa183] text-left border-b border-gray-200">Nom</th>
+        <th class="px-2 py-2.5 bg-[#e8f4f8] text-[#1fa183] text-left border-b border-gray-200">Âge</th>
+        <th class="px-2 py-2.5 bg-[#e8f4f8] text-[#1fa183] text-left border-b border-gray-200">Téléphone</th>
+        <th class="px-2 py-2.5 bg-[#e8f4f8] text-[#1fa183] text-left border-b border-gray-200">Pathologie</th>
+        <th class="px-2 py-2.5 bg-[#e8f4f8] text-[#1fa183] text-left border-b border-gray-200">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let p of filteredPatients" class="border-b border-gray-200 last:border-b-0">
+        <td class="px-2 py-2.5">{{ p.nom }}</td>
+        <td class="px-2 py-2.5">{{ p.age }}</td>
+        <td class="px-2 py-2.5">{{ p.tel }}</td>
+        <td class="px-2 py-2.5">{{ p.pathologie }}</td>
+        <td class="px-2 py-2.5">
+          <button (click)="editPatient(p)" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors duration-200 text-sm mr-2">Modifier</button>
+          <button (click)="deletePatient(p.id)" class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors duration-200 text-sm">Supprimer</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="bg-gray-50 rounded-lg p-5 shadow-[0_1px_4px_rgba(31,161,131,0.05)] max-w-md mx-auto" *ngIf="showForm">
+    <h3 class="text-lg font-semibold text-gray-800 mb-4">{{ isEdit ? 'Modifier' : 'Ajouter' }} un patient</h3>
+    <label class="block mb-2.5">
+      <span class="text-gray-700 font-medium">Nom :</span>
+      <input [(ngModel)]="selectedPatient.nom" class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1fa183] focus:border-transparent" />
+    </label>
+    <label class="block mb-2.5">
+      <span class="text-gray-700 font-medium">Âge :</span>
+      <input type="number" [(ngModel)]="selectedPatient.age" class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1fa183] focus:border-transparent" />
+    </label>
+    <label class="block mb-2.5">
+      <span class="text-gray-700 font-medium">Téléphone :</span>
+      <input [(ngModel)]="selectedPatient.tel" class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1fa183] focus:border-transparent" />
+    </label>
+    <label class="block mb-2.5">
+      <span class="text-gray-700 font-medium">Pathologie :</span>
+      <input [(ngModel)]="selectedPatient.pathologie" class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1fa183] focus:border-transparent" />
+    </label>
+    <div class="flex gap-2.5 mt-2.5">
+      <button (click)="savePatient()" class="px-4 py-2 bg-[#1fa183] text-white rounded-md hover:bg-[#168a73] transition-colors duration-200 font-medium">Enregistrer</button>
+      <button (click)="cancel()" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors duration-200 font-medium">Annuler</button>
+    </div>
+  </div>
+</div>

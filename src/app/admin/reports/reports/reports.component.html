@@ -1,0 +1,192 @@
+<div class="reports-page">
+  <!-- Header avec logo et déconnexion -->
+  <app-header 
+    pageTitle="Rapports & Statistiques"
+    pageSubtitle="Analyse des données de la clinique">
+  </app-header>
+
+  <div class="reports-header">
+    <h2>📊 Rapports & Statistiques</h2>
+    <div class="header-controls">
+      <select [(ngModel)]="selectedPeriod" (change)="onPeriodChange()" class="period-selector">
+        <option value="week">Cette semaine</option>
+        <option value="month" selected>Ce mois</option>
+        <option value="quarter">Ce trimestre</option>
+        <option value="year">Cette année</option>
+      </select>
+      <button class="btn-export" (click)="exportReport()" [disabled]="loading">
+        <span *ngIf="!loading">📥 Exporter</span>
+        <span *ngIf="loading">⏳ Export...</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Indicateur de chargement -->
+  <div class="loading-container" *ngIf="loading">
+    <div class="loading-spinner"></div>
+    <p>Chargement des données...</p>
+  </div>
+
+  <!-- Message d'erreur -->
+  <div class="error-container" *ngIf="error && !loading">
+    <div class="error-message">
+      <span class="error-icon">⚠️</span>
+      <span>{{ error }}</span>
+      <button class="btn-retry" (click)="retryLoad()">🔄 Réessayer</button>
+    </div>
+  </div>
+
+  <!-- Statistiques principales -->
+  <div class="stats-row" *ngIf="!loading">
+    <div class="stat-card" *ngFor="let stat of mainStats" [style.--card-color]="stat.color">
+      <div class="stat-header">
+        <span class="stat-icon">{{ stat.icon }}</span>
+        <span class="stat-title">{{ stat.title }}</span>
+      </div>
+      <div class="stat-value">{{ stat.value | number }}</div>
+      <div class="stat-unit">{{ stat.unit }}</div>
+      <div class="stat-trend" [class]="getTrendClass(stat.trend)">
+        <span class="trend-icon">{{ getTrendIcon(stat.trend) }}</span>
+        <span class="trend-value">{{ stat.trend >= 0 ? '+' : '' }}{{ stat.trend }}%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sections détaillées -->
+  <div class="detailed-sections" *ngIf="!loading">
+    
+    <!-- Statistiques des rendez-vous -->
+    <div class="section-card">
+      <h3>📅 Statistiques des Rendez-vous</h3>
+      <div class="appointment-stats">
+        <div class="stat-item">
+          <div class="stat-number">{{ appointmentStats.total }}</div>
+          <div class="stat-label">Total RDV</div>
+        </div>
+        <div class="stat-item completed">
+          <div class="stat-number">{{ appointmentStats.completed }}</div>
+          <div class="stat-label">Terminés ({{ calculateCompletionRate() }}%)</div>
+        </div>
+        <div class="stat-item pending">
+          <div class="stat-number">{{ appointmentStats.pending }}</div>
+          <div class="stat-label">En attente</div>
+        </div>
+        <div class="stat-item cancelled">
+          <div class="stat-number">{{ appointmentStats.cancelled }}</div>
+          <div class="stat-label">Annulés ({{ calculateCancellationRate() }}%)</div>
+        </div>
+        <div class="stat-item today">
+          <div class="stat-number">{{ appointmentStats.today }}</div>
+          <div class="stat-label">Aujourd'hui</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Statistiques des revenus -->
+    <div class="section-card">
+      <h3>💰 Analyse des Revenus</h3>
+      <div class="revenue-stats">
+        <div class="revenue-item">
+          <div class="revenue-label">Revenus mensuels</div>
+          <div class="revenue-value">{{ revenueStats.monthly | number }} FCFA</div>
+          <div class="revenue-growth positive">{{ getRevenueGrowth() }}</div>
+        </div>
+        <div class="revenue-item">
+          <div class="revenue-label">Revenus hebdomadaires</div>
+          <div class="revenue-value">{{ revenueStats.weekly | number }} FCFA</div>
+        </div>
+        <div class="revenue-item">
+          <div class="revenue-label">Revenus quotidiens</div>
+          <div class="revenue-value">{{ revenueStats.daily | number }} FCFA</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Statistiques des patients -->
+    <div class="section-card">
+      <h3>👥 Démographie des Patients</h3>
+      <div class="patient-stats">
+        <div class="patient-item">
+          <div class="patient-number">{{ patientStats.total }}</div>
+          <div class="patient-label">Total patients</div>
+        </div>
+        <div class="patient-item">
+          <div class="patient-number">{{ patientStats.newThisMonth }}</div>
+          <div class="patient-label">Nouveaux ce mois</div>
+        </div>
+        <div class="patient-item">
+          <div class="patient-number">{{ patientStats.active }}</div>
+          <div class="patient-label">Patients actifs</div>
+        </div>
+        <div class="patient-item">
+          <div class="patient-number">{{ patientStats.averageAge }} ans</div>
+          <div class="patient-label">Âge moyen</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top médecins -->
+    <div class="section-card">
+      <h3>🏆 Top Médecins</h3>
+      <div class="doctors-list">
+        <div class="doctor-item" *ngFor="let doctor of topDoctors; let i = index">
+          <div class="doctor-rank">#{{ i + 1 }}</div>
+          <div class="doctor-info">
+            <div class="doctor-name">{{ doctor.name }}</div>
+            <div class="doctor-stats">
+              <span class="patients-count">{{ doctor.patients }} patients</span>
+              <span class="rating">⭐ {{ doctor.rating }}/5</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Activité récente -->
+    <div class="section-card">
+      <h3>🕒 Activité Récente</h3>
+      <div class="activity-list">
+        <div class="activity-item" *ngFor="let activity of recentActivity">
+          <div class="activity-icon">{{ activity.icon }}</div>
+          <div class="activity-content">
+            <div class="activity-type">{{ activity.type }}</div>
+            <div class="activity-description">{{ activity.description }}</div>
+            <div class="activity-time">{{ activity.time }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Graphique d'évolution -->
+    <div class="section-card full-width">
+      <h3>📈 Évolution sur 4 mois</h3>
+      <div class="chart-container">
+        <div class="chart-legend">
+          <div class="legend-item">
+            <span class="legend-color patients"></span>
+            <span>Patients</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-color appointments"></span>
+            <span>Rendez-vous</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-color revenue"></span>
+            <span>Revenus (k FCFA)</span>
+          </div>
+        </div>
+        <div class="chart-bars">
+          <div class="chart-bar" *ngFor="let data of monthlyData">
+            <div class="bar-month">{{ data.month }}</div>
+            <div class="bar-container">
+              <div class="bar patients" [style.height.%]="(data.patients / 200) * 100"></div>
+              <div class="bar appointments" [style.height.%]="(data.appointments / 400) * 100"></div>
+              <div class="bar revenue" [style.height.%]="(data.revenue / 300000) * 100"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
