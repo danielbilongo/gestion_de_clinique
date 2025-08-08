@@ -14,27 +14,29 @@ import { DashboardSecretaireComponent } from './Dashboard/dashboard-secretaire/d
 import { ChatComponent } from './chat/chat.component';
 import { CalendarRendezvousComponent } from './calendar-rendezvous/calendar-rendezvous.component';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 /* Ajoutez les autres composants ici */
 
 @NgModule({
   declarations: [
-    AppComponent,
-    SidebarComponent,
-    LoginComponent,
-    DashboardComponent,
-    UsersComponent,
-    ReportsComponent,
-    SettingsComponent,
-    DashboardMedecinComponent,
-    DashboardSecretaireComponent,
-    ChatComponent,
-    CalendarRendezvousComponent,
+  // AppComponent,
+    // SidebarComponent,
+    // LoginComponent,
+    // DashboardComponent,
+    // UsersComponent,
+    // ReportsComponent,
+    // SettingsComponent,
+    // DashboardMedecinComponent,
+    // DashboardSecretaireComponent,
+    // ChatComponent,
+    // CalendarRendezvousComponent,
     /* Ajoutez ici tous les autres composants */
   ],
   imports: [
     BrowserModule,
     FormsModule,
-    CommonModule
+    CommonModule,
+    RouterModule
     /* Ajoutez ici les modules spécifiques nécessaires (par exemple FullCalendar, HttpClientModule, etc.) */
   ],
   providers: [],

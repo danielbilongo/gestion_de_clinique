@@ -1,6 +1,10 @@
+//import { routes } from './app.routes';
 import { Component } from '@angular/core';
 import { SidebarComponent } from "./sidebar/sidebar/sidebar.component";
-import { NavigationEnd, Router, RouterModule, RouterOutlet } from '@angular/router';
+//import { NavigationEnd, Router, RouterModule, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
+import { RouterModule, RouterOutlet } from '@angular/router';
+
 import { CommonModule } from '@angular/common';
 
 

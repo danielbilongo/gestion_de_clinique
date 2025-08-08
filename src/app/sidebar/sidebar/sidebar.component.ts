@@ -70,9 +70,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   private updateFilteredMenu() {
     console.log('Updating filtered menu for role:', this.role);
+     const currentRole = this.role.toLowerCase();
     this.filteredMenuItems = this.menu.filter(item => {
-      const hasRole = item.roles.includes(this.role);
-      console.log(`Item: ${item.label}, Roles: [${item.roles.join(',')}], Current role: '${this.role}', Included: ${hasRole}`);
+      const hasRole = item.roles.includes(currentRole);
+      console.log(`Item: ${item.label}, Roles: [${item.roles.join(',')}], Current role: '${currentRole}', Included: ${hasRole}`);
       return hasRole;
     });
     console.log('Total filtered items:', this.filteredMenuItems.length);
