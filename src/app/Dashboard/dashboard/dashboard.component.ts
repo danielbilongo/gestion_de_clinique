@@ -4,13 +4,14 @@ import { RouterModule } from '@angular/router';
 import { DashboardService, DashboardStats, RecentActivity, QuickAction, UserSummary, Alert, SystemHealth } from '../../services/dashboard.service';
 import { Subject, takeUntil } from 'rxjs';
 import { AppHeaderComponent } from '../../components/app-header/app-header.component';
+import { FooterComponent } from "../../components/app-footer/footer.component";
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',
   standalone: true,
-  imports: [CommonModule, RouterModule, AppHeaderComponent]
+  imports: [CommonModule, RouterModule, AppHeaderComponent, FooterComponent]
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   

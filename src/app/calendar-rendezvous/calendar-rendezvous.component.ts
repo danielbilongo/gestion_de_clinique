@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { AppHeaderComponent } from "../components/app-header/app-header.component";
 
 @Component({
   selector: 'app-calendar-rendezvous',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, AppHeaderComponent],
   templateUrl: './calendar-rendezvous.component.html',
   styleUrls: ['./calendar-rendezvous.component.css']
 })

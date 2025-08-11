@@ -3,12 +3,13 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { UserService, User } from '../../services/user.service';
 import { AuthService } from '../../services/auth.service';
+import { AppHeaderComponent } from '../../components/app-header/app-header.component';
 
 // Interface moved to user.service.ts
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AppHeaderComponent],
   selector: 'app-users',
   templateUrl: './users.component.html',
   styleUrls: ['./users.component.css']
@@ -68,6 +69,14 @@ export class UsersComponent implements OnInit {
         this.showNotification('Erreur lors du chargement des utilisateurs');
       }
     });
+  }
+
+  toggleAddForm() {
+    this.showAddForm = !this.showAddForm;
+    this.showEditForm = false;
+    if (this.showAddForm) {
+      this.resetNewUser();
+    }
   }
 
   addUser() {

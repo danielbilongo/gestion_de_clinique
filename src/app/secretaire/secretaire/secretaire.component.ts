@@ -3,10 +3,11 @@ import { SecretaireService } from '../../services/secretaire.service';
 import { Secretaire } from '../../models/secretaire.model';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { FooterComponent } from "../../components/app-footer/footer.component";
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, FooterComponent],
   selector: 'app-secretaire',
   templateUrl: './secretaire.component.html',
 })

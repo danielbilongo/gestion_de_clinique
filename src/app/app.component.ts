@@ -6,11 +6,13 @@ import { NavigationEnd, Router } from '@angular/router';
 import { RouterModule, RouterOutlet } from '@angular/router';
 
 import { CommonModule } from '@angular/common';
+import { FooterComponent } from "./components/app-footer/footer.component";
+import { AppHeaderComponent } from "./components/app-header/app-header.component";
 
 
 @Component({
   standalone: true,
-  imports: [ RouterOutlet, RouterModule, CommonModule, SidebarComponent ],
+  imports: [RouterOutlet, RouterModule, CommonModule, SidebarComponent, FooterComponent, AppHeaderComponent],
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']

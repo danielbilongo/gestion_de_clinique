@@ -8,9 +8,9 @@ import { AuthService } from '../../services/auth.service';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="flex justify-between items-center py-5 px-7 bg-white rounded-xl shadow-[0_2px_10px_rgba(0,0,0,0.1)] mb-7 flex-col md:flex-row gap-5 md:gap-0">
+    <div class=" sticky top-0 flex justify-between items-center py-5 px-7 bg-white  shadow-[0_2px_10px_rgba(0,0,0,0.1)] mb-7 flex-col md:flex-row gap-5 md:gap-0 my-0 z-50">
       <div class="flex items-center">
-        <div class="flex items-center gap-4">
+        <!-- <div class="flex items-center gap-4">
           <svg class="w-8 h-8 flex-shrink-0" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" fill="#1fa183"/>
             <path d="M19 14L17.5 15.5L19 17L17.5 18.5L19 20L17.5 21.5L19 23" stroke="#1fa183" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -20,7 +20,7 @@ import { AuthService } from '../../services/auth.service';
             <h1 class="text-3xl font-bold text-[#1fa183] m-0 tracking-wide md:text-2xl sm:text-xl">MediClin</h1>
             <p class="text-sm text-gray-600 m-0 font-medium">Centre de Santé</p>
           </div>
-        </div>
+        </div> -->
       </div>
       
       <div class="text-center flex-1 mx-5 order-first md:order-none">
@@ -90,13 +90,13 @@ export class AppHeaderComponent {
   getDefaultPhoto(role: string): string {
     switch (role) {
       case 'MEDECIN':
-        return 'assets/images/users/default-doctor.svg';
+        return '/assets/images/users/default-doctor.svg';
       case 'SECRETAIRE':
-        return 'assets/images/users/default-secretary.svg';
+        return '/assets/images/users/default-secretary.svg';
       case 'ADMIN':
-        return 'assets/images/users/default-admin.svg';
+        return '/assets/images/users/default-admin.svg';
       default:
-        return 'assets/images/users/default-user.svg';
+        return '/assets/images/users/default-user.svg';
     }
   }
 

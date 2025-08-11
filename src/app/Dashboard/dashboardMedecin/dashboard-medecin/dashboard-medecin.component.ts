@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AppHeaderComponent } from '../../../components/app-header/app-header.component';
+import { FooterComponent } from "../../../components/app-footer/footer.component";
 
 @Component({
   selector: 'app-dashboard-medecin',
   standalone: true,
-  imports: [CommonModule, AppHeaderComponent],
+  imports: [CommonModule, AppHeaderComponent, FooterComponent],
   templateUrl: './dashboard-medecin.component.html',
   styleUrls: ['./dashboard-medecin.component.css']
 })

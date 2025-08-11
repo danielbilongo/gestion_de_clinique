@@ -3,10 +3,12 @@ import { Medecin } from '../../models/medecin.model';
 import { MedecinService } from '../../services/medecin.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { AppHeaderComponent } from "../../components/app-header/app-header.component";
+import { FooterComponent } from "../../components/app-footer/footer.component";
 
 @Component({
   selector: 'app-medecins',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AppHeaderComponent, FooterComponent],
   templateUrl: './medecins.component.html',
   styleUrl: './medecins.component.css'
 })

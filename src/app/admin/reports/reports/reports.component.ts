@@ -306,4 +306,28 @@ export class ReportsComponent implements OnInit, OnDestroy {
     this.error = '';
     this.loadReports();
   }
+
+  getStatCardClass(color: string): string {
+    switch(color) {
+      case 'blue': return 'border-blue-500';
+      case 'green': return 'border-green-500';
+      case 'purple': return 'border-purple-500';
+      case 'orange': return 'border-orange-500';
+      case 'red': return 'border-red-500';
+      case 'indigo': return 'border-indigo-500';
+      default: return 'border-gray-500';
+    }
+  }
+
+  getStatIconClass(color: string): string {
+    switch(color) {
+      case 'blue': return 'bg-blue-100 text-blue-600';
+      case 'green': return 'bg-green-100 text-green-600';
+      case 'purple': return 'bg-purple-100 text-purple-600';
+      case 'orange': return 'bg-orange-100 text-orange-600';
+      case 'red': return 'bg-red-100 text-red-600';
+      case 'indigo': return 'bg-indigo-100 text-indigo-600';
+      default: return 'bg-gray-100 text-gray-600';
+    }
+  }
 }
