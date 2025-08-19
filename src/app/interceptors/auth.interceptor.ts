@@ -1,33 +1,29 @@
-import { HttpInterceptorFn } from '@angular/common/http';
+import { HttpInterceptorFn, HttpHandlerFn, HttpRequest, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
-import { catchError } from 'rxjs/operators';
-import { throwError } from 'rxjs';
+import { catchError, throwError, from, switchMap } from 'rxjs';
 
-export const AuthInterceptor: HttpInterceptorFn = (request, next) => {
-  const authService = inject(AuthService);
+export const AuthInterceptor: HttpInterceptorFn = (request: HttpRequest<unknown>, next: HttpHandlerFn) => {
   const router = inject(Router);
-
-  const token = authService.getToken();
+  const token = localStorage.getItem('token');
+  let authRequest = request;
 
   if (token) {
-    request = request.clone({
+    authRequest = request.clone({
       setHeaders: {
         Authorization: `Bearer ${token}`
       }
     });
   }
 
-  return next(request).pipe(
-    catchError((error) => {
+  return next(authRequest).pipe(
+    catchError((error: HttpErrorResponse) => {
       if (error.status === 401) {
-        // Token expiré ou invalide
-        authService.logout().subscribe(() => {
-          router.navigate(['/login']);
-        });
+        // Handle 401 Unauthorized
+        localStorage.removeItem('token');
+        router.navigate(['/login']);
       }
       return throwError(() => error);
     })
   );
-}; 
+};

@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { API_CONFIG } from '../config/api.config';
 
 export interface DashboardStats {
   totalPatients: number;
@@ -68,7 +69,7 @@ export interface Alert {
   providedIn: 'root'
 })
 export class DashboardService {
-  private apiUrl = 'http://localhost:3000/api'; // Ajustez selon votre backend
+  private apiUrl = `${API_CONFIG.BASE_URL}/api`;
 
   constructor(private http: HttpClient) {}
 

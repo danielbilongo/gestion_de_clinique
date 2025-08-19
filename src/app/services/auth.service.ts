@@ -2,7 +2,7 @@
 
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject } from 'rxjs';
+import { Observable, BehaviorSubject, of } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { LoginRequestDto, AuthResponse, Utilisateur } from '../models/auth.model';
 import { API_CONFIG } from '../config/api.config';
@@ -42,18 +42,17 @@ export class AuthService {
   }
 
   logout(): Observable<any> {
-    return this.http.post(`${API_CONFIG.BASE_URL}${API_CONFIG.AUTH.LOGOUT}`, {})
-      .pipe(
-        tap(() => {
-          localStorage.removeItem('token');
-          this.currentUserSubject.next(null);
-        }),
-        catchError(error => {
-          localStorage.removeItem('token');
-          this.currentUserSubject.next(null);
-          throw error;
-        })
-      );
+    // Clear local storage and user state first
+    localStorage.removeItem('token');
+    this.currentUserSubject.next(null);
+    
+    // Try to notify the server, but don't wait for it
+    return this.http.post(`${API_CONFIG.BASE_URL}${API_CONFIG.AUTH.LOGOUT}`, {}).pipe(
+      catchError(() => {
+        // Even if the server call fails, we still want to proceed with logout
+        return of({ success: true });
+      })
+    );
   }
 
   getCurrentUser(): Observable<Utilisateur> {

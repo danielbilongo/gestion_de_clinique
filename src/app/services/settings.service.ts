@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { catchError, of } from 'rxjs';
+import { API_CONFIG } from '../config/api.config';
 
 export interface UserProfile {
   id: string;
@@ -63,7 +64,7 @@ export interface ThemeSettings {
   providedIn: 'root'
 })
 export class SettingsService {
-  private apiUrl = 'http://localhost:3000/api'; // Ajustez selon votre backend
+  private apiUrl = `${API_CONFIG.BASE_URL}/api`;
 
   constructor(private http: HttpClient) {}
 

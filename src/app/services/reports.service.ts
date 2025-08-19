@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { API_CONFIG } from '../config/api.config';
 
 export interface StatCard {
   title: string;
@@ -67,7 +68,7 @@ export interface ReportFilters {
   providedIn: 'root'
 })
 export class ReportsService {
-  private apiUrl = 'http://localhost:3000/api'; // Ajustez selon votre backend
+  private apiUrl = `${API_CONFIG.BASE_URL}/api`;
 
   constructor(private http: HttpClient) {}
 

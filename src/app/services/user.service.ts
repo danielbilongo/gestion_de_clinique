@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, forkJoin, map } from 'rxjs';
+import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
+import { Observable, forkJoin, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 import { Medecin } from '../models/medecin.model';
 import { Patient } from '../models/patient.model';
 import { Secretaire } from '../models/secretaire.model';
@@ -32,42 +33,47 @@ export class UserService {
     private authService: AuthService
   ) { }
 
-  private getAuthHeaders(): HttpHeaders {
-    const token = this.authService.getToken();
+  // Préparer les headers par défaut pour les requêtes HTTP
+  private getDefaultHeaders(): HttpHeaders {
     return new HttpHeaders({
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
+      'Content-Type': 'application/json'
     });
   }
 
-  // Récupérer tous les utilisateurs (médecins, secrétaires, patients)
+  // Récupérer tous les utilisateurs (médecins, secrétaires, patients) en une seule requête forkJoin
   getAllUsers(): Observable<User[]> {
-    const headers = this.getAuthHeaders();
-    
+    const headers = this.getDefaultHeaders();
+
     return forkJoin({
-      medecins: this.http.get<Medecin[]>(`${API_CONFIG.BASE_URL}${API_CONFIG.MEDECIN.ALL}`, { headers }),
-      secretaires: this.http.get<Secretaire[]>(`${API_CONFIG.BASE_URL}${API_CONFIG.SECRETAIRE.ALL}`, { headers }),
-      patients: this.http.get<Patient[]>(`${API_CONFIG.BASE_URL}${API_CONFIG.PATIENT.ALL}`, { headers })
+      medecins: this.http.get<Medecin[]>(`${API_CONFIG.BASE_URL}${API_CONFIG.MEDECIN.ALL}`, { headers }).pipe(
+        catchError((error: HttpErrorResponse) => this.handleError(error, 'doctors'))
+      ),
+      secretaires: this.http.get<Secretaire[]>(`${API_CONFIG.BASE_URL}${API_CONFIG.SECRETAIRE.ALL}`, { headers }).pipe(
+        catchError((error: HttpErrorResponse) => this.handleError(error, 'secretaries'))
+      ),
+      patients: this.http.get<Patient[]>(`${API_CONFIG.BASE_URL}${API_CONFIG.PATIENT.ALL}`, { headers }).pipe(
+        catchError((error: HttpErrorResponse) => this.handleError(error, 'patients'))
+      )
     }).pipe(
-      map(result => {
+      map(results => {
         const users: User[] = [];
-        
-        // Convertir les médecins
-        result.medecins.forEach(medecin => {
+
+        // Conversion des médecins en User
+        results.medecins.forEach((medecin: { id: any; nom: any; email: any; specialite: any; telephone: any; photo: any; }) => {
           users.push({
             id: medecin.id || 0,
             nom: medecin.nom,
             role: 'Médecin',
             email: medecin.email,
-            statut: 'Active', // Vous pouvez ajuster selon votre logique
+            statut: 'Active',
             specialite: medecin.specialite,
             telephone: medecin.telephone,
             photo: medecin.photo || 'assets/images/users/default-doctor.svg'
           });
         });
 
-        // Convertir les secrétaires
-        result.secretaires.forEach(secretaire => {
+        // Conversion des secrétaires en User
+        results.secretaires.forEach((secretaire: { id: any; nom: any; email: any; telephone: any; photo: any; }) => {
           users.push({
             id: secretaire.id || 0,
             nom: secretaire.nom,
@@ -79,8 +85,8 @@ export class UserService {
           });
         });
 
-        // Convertir les patients
-        result.patients.forEach(patient => {
+        // Conversion des patients en User
+        results.patients.forEach((patient: { id: any; nom: any; email: any; telephone: any; adresse: any; dateNaissance: any; numeroSecuriteSociale: any; photo: any; }) => {
           users.push({
             id: patient.id || 0,
             nom: patient.nom,
@@ -100,10 +106,10 @@ export class UserService {
     );
   }
 
-  // Créer un utilisateur selon son rôle
+  // Créer un utilisateur selon son rôle (POST)
   createUser(user: User): Observable<any> {
-    const headers = this.getAuthHeaders();
-    
+    const headers = this.getDefaultHeaders();
+
     switch (user.role) {
       case 'Médecin':
         const medecinData: Partial<Medecin> = {
@@ -114,7 +120,7 @@ export class UserService {
           photo: user.photo
         };
         return this.http.post(`${API_CONFIG.BASE_URL}${API_CONFIG.MEDECIN.CREATE}`, medecinData, { headers });
-        
+
       case 'Secrétaire':
         const secretaireData: Partial<Secretaire> = {
           nom: user.nom,
@@ -123,7 +129,7 @@ export class UserService {
           photo: user.photo
         };
         return this.http.post(`${API_CONFIG.BASE_URL}${API_CONFIG.SECRETAIRE.CREATE}`, secretaireData, { headers });
-        
+
       case 'Patient':
         const patientData: Partial<Patient> = {
           nom: user.nom,
@@ -135,16 +141,38 @@ export class UserService {
           photo: user.photo
         };
         return this.http.post(`${API_CONFIG.BASE_URL}${API_CONFIG.PATIENT.CREATE}`, patientData, { headers });
-        
+
       default:
         throw new Error('Type d\'utilisateur non supporté');
     }
   }
 
-  // Mettre à jour un utilisateur
+  // Récupérer un utilisateur par son ID (GET)
+  getUserById(id: number, userType: string): Observable<User> {
+    const headers = this.getDefaultHeaders();
+    let url: string;
+
+    switch (userType) {
+      case 'Médecin':
+        url = API_CONFIG.MEDECIN.BY_ID.replace('{id}', id.toString());
+        break;
+      case 'Secrétaire':
+        url = API_CONFIG.SECRETAIRE.BY_ID.replace('{id}', id.toString());
+        break;
+      case 'Patient':
+        url = API_CONFIG.PATIENT.BY_ID.replace('{id}', id.toString());
+        break;
+      default:
+        throw new Error('Type d\'utilisateur non supporté');
+    }
+
+    return this.http.get<User>(`${API_CONFIG.BASE_URL}${url}`, { headers });
+  }
+
+  // Mettre à jour un utilisateur (PUT)
   updateUser(user: User): Observable<any> {
-    const headers = this.getAuthHeaders();
-    
+    const headers = this.getDefaultHeaders();
+
     switch (user.role) {
       case 'Médecin':
         const medecinData: Partial<Medecin> = {
@@ -155,8 +183,9 @@ export class UserService {
           telephone: user.telephone,
           photo: user.photo
         };
-        return this.http.put(`${API_CONFIG.BASE_URL}${API_CONFIG.MEDECIN.UPDATE.replace('{id}', user.id.toString())}`, medecinData, { headers });
-        
+        const medecinUrl = API_CONFIG.MEDECIN.UPDATE.replace('{id}', user.id.toString());
+        return this.http.put(`${API_CONFIG.BASE_URL}${medecinUrl}`, medecinData, { headers });
+
       case 'Secrétaire':
         const secretaireData: Partial<Secretaire> = {
           id: user.id,
@@ -165,8 +194,9 @@ export class UserService {
           telephone: user.telephone,
           photo: user.photo
         };
-        return this.http.put(`${API_CONFIG.BASE_URL}${API_CONFIG.SECRETAIRE.UPDATE.replace('{id}', user.id.toString())}`, secretaireData, { headers });
-        
+        const secretaireUrl = API_CONFIG.SECRETAIRE.UPDATE.replace('{id}', user.id.toString());
+        return this.http.put(`${API_CONFIG.BASE_URL}${secretaireUrl}`, secretaireData, { headers });
+
       case 'Patient':
         const patientData: Partial<Patient> = {
           id: user.id,
@@ -178,29 +208,46 @@ export class UserService {
           numeroSecuriteSociale: user.numeroSecuriteSociale,
           photo: user.photo
         };
-        return this.http.put(`${API_CONFIG.BASE_URL}${API_CONFIG.PATIENT.UPDATE.replace('{id}', user.id.toString())}`, patientData, { headers });
-        
+        const patientUrl = API_CONFIG.PATIENT.UPDATE.replace('{id}', user.id.toString());
+        return this.http.put(`${API_CONFIG.BASE_URL}${patientUrl}`, patientData, { headers });
+
       default:
         throw new Error('Type d\'utilisateur non supporté');
     }
   }
 
-  // Supprimer un utilisateur
+  // Supprimer un utilisateur (DELETE)
   deleteUser(user: User): Observable<any> {
-    const headers = this.getAuthHeaders();
-    
+    const headers = this.getDefaultHeaders();
+    let url: string;
+
     switch (user.role) {
       case 'Médecin':
-        return this.http.delete(`${API_CONFIG.BASE_URL}${API_CONFIG.MEDECIN.DELETE.replace('{id}', user.id.toString())}`, { headers });
-        
+        url = API_CONFIG.MEDECIN.DELETE.replace('{id}', user.id.toString());
+        break;
+
       case 'Secrétaire':
-        return this.http.delete(`${API_CONFIG.BASE_URL}${API_CONFIG.SECRETAIRE.DELETE.replace('{id}', user.id.toString())}`, { headers });
-        
+        url = API_CONFIG.SECRETAIRE.DELETE.replace('{id}', user.id.toString());
+        break;
+
       case 'Patient':
-        return this.http.delete(`${API_CONFIG.BASE_URL}${API_CONFIG.PATIENT.DELETE.replace('{id}', user.id.toString())}`, { headers });
-        
+        url = API_CONFIG.PATIENT.DELETE.replace('{id}', user.id.toString());
+        break;
+
       default:
         throw new Error('Type d\'utilisateur non supporté');
     }
+
+    return this.http.delete(`${API_CONFIG.BASE_URL}${url}`, { headers });
+  }
+
+  // Gestion centralisée des erreurs HTTP
+  private handleError(error: HttpErrorResponse, entity: string): Observable<any> {
+    if (error.status === 401) {
+      // Déconnexion en cas d’erreur d’authentification
+      this.authService.logout().subscribe();
+    }
+    console.error(`Error fetching ${entity}:`, error);
+    return of([]); // Retourne un Observable vide pour continuer le flux
   }
 }
