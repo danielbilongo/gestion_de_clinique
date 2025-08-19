@@ -14,12 +14,12 @@ export const API_CONFIG = {
     DELETE: '/api/medecin/{id}'
   },
   PATIENT: {
-    BASE: '/api/patient',
-    ALL: '/api/patient/all',
-    BY_ID: '/api/patient/{id}',
-    CREATE: '/api/patient/save',
-    UPDATE: '/api/patient/update/{id}',
-    DELETE: '/api/patient/{id}'
+    BASE: '/api/patients',
+    ALL: '/api/patients/all',
+    BY_ID: '/api/patients/{id}',
+    CREATE: '/api/patients/save',
+    UPDATE: '/api/patients/update/{id}',
+    DELETE: '/api/patients/{id}'
   },
   SECRETAIRE: {
     BASE: '/api/secretaire',

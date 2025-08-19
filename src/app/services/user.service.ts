@@ -136,8 +136,7 @@ export class UserService {
           email: user.email,
           telephone: user.telephone,
           adresse: user.adresse,
-          dateNaissance: user.dateNaissance,
-          numeroSecuriteSociale: user.numeroSecuriteSociale,
+          dateNaissance: user.dateNaissance,         
           photo: user.photo
         };
         return this.http.post(`${API_CONFIG.BASE_URL}${API_CONFIG.PATIENT.CREATE}`, patientData, { headers });
@@ -205,7 +204,6 @@ export class UserService {
           telephone: user.telephone,
           adresse: user.adresse,
           dateNaissance: user.dateNaissance,
-          numeroSecuriteSociale: user.numeroSecuriteSociale,
           photo: user.photo
         };
         const patientUrl = API_CONFIG.PATIENT.UPDATE.replace('{id}', user.id.toString());

@@ -1,54 +1,122 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { Component, OnInit } from '@angular/core';
+import { Patient } from '../../models/patient.model';
+import { PatientService } from '../../services/patient.service';
 import { AppHeaderComponent } from "../../components/app-header/app-header.component";
-import { FooterComponent } from "../../components/app-footer/footer.component";
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-patients',
-  standalone: true,
-  imports: [CommonModule, FormsModule, AppHeaderComponent, FooterComponent],
   templateUrl: './patients.component.html',
-  styleUrls: ['./patients.component.css']
+  styleUrls: ['./patients.component.css'],
+  imports: [AppHeaderComponent, FormsModule, CommonModule]
 })
-export class PatientsComponent {
-  patients = [
-    { id: 1, nom: 'Paul Kamga', age: 45, tel: '699123456', pathologie: 'Hypertension' },
-    { id: 2, nom: 'Marie Tchoumi', age: 32, tel: '677654321', pathologie: 'Diabète' }
-  ];
+export class PatientsComponent implements OnInit {
+
+  patients: Patient[] = [];
   search = '';
-  selectedPatient: any = null;
+  selectedPatient: Patient | null = null;
   showForm = false;
   isEdit = false;
 
-  get filteredPatients() {
-    return this.patients.filter(p => p.nom.toLowerCase().includes(this.search.toLowerCase()));
+  constructor(private patientService: PatientService) {}
+
+  ngOnInit(): void {
+    this.loadPatients();
   }
 
-  addPatient() {
-    this.selectedPatient = { nom: '', age: '', tel: '', pathologie: '' };
+  // Charger la liste des patients depuis le backend et vérifier les IDs
+  loadPatients(): void {
+    this.patientService.getAll().subscribe({
+      next: patients => {
+        this.patients = patients;
+        console.log('Patients chargés:', this.patients);
+      },
+      error: err => console.error('Erreur chargement patients', err)
+    });
+  }
+
+  // Filtrer les patients selon la recherche
+  get filteredPatients(): Patient[] {
+    const term = this.search.toLowerCase();
+    return this.patients.filter(p => p.nom.toLowerCase().includes(term));
+  }
+
+  // Préparer formulaire ajout (sans id, qui sera généré par le backend)
+  addPatient(): void {
+    this.selectedPatient = {
+      nom: '',
+      prenom: '',
+      dateNaissance: '',
+      sexe: 'Homme',
+      telephone: '',
+      email: '',
+      adresse: '',
+      photo: ''
+    };
     this.isEdit = false;
     this.showForm = true;
   }
-  editPatient(p: any) {
-    this.selectedPatient = { ...p };
+
+  // Préparer formulaire modification avec copie du patient existant
+  editPatient(patient: Patient): void {
+    this.selectedPatient = { ...patient };
     this.isEdit = true;
     this.showForm = true;
   }
-  savePatient() {
-    if (this.isEdit) {
-      const idx = this.patients.findIndex(p => p.id === this.selectedPatient.id);
-      if (idx > -1) this.patients[idx] = { ...this.selectedPatient };
-    } else {
-      this.selectedPatient.id = Date.now();
-      this.patients.push({ ...this.selectedPatient });
+
+  // Sauvegarder un patient (création ou mise à jour avec validation d'id)
+  savePatient(): void {
+    if (!this.selectedPatient) {
+      console.error('Aucun patient sélectionné');
+      return;
     }
-    this.showForm = false;
+
+    if (this.isEdit) {
+      if (this.selectedPatient.id === undefined || this.selectedPatient.id === null || this.selectedPatient.id <= 0) {
+        console.error('Impossible de mettre à jour : ID patient manquant ou invalide');
+        return;
+      }
+      this.patientService.update(this.selectedPatient.id, this.selectedPatient).subscribe({
+        next: () => {
+          this.loadPatients();
+          this.showForm = false;
+          this.selectedPatient = null;
+        },
+        error: err => console.error('Erreur mise à jour patient', err)
+      });
+    } else {
+      this.patientService.create(this.selectedPatient).subscribe({
+        next: () => {
+          this.loadPatients();
+          this.showForm = false;
+          this.selectedPatient = null;
+        },
+        error: err => console.error('Erreur création patient', err)
+      });
+    }
   }
-  deletePatient(id: number) {
-    this.patients = this.patients.filter(p => p.id !== id);
+
+  // Supprimer un patient après vérification de l'id valide
+  deletePatient(id?: number): void {
+    if (id === undefined || id === null || id <= 0) {
+      console.error('Impossible de supprimer : ID patient manquant ou invalide');
+      return;
+    }
+
+    if (!confirm('Voulez-vous vraiment supprimer ce patient ?')) {
+      return;
+    }
+
+    this.patientService.delete(id).subscribe({
+      next: () => this.loadPatients(),
+      error: err => console.error('Erreur suppression patient', err)
+    });
   }
-  cancel() {
+
+  // Annuler ajout/modification
+  cancel(): void {
     this.showForm = false;
+    this.selectedPatient = null;
   }
 }

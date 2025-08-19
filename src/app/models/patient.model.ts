@@ -7,6 +7,10 @@ export interface Patient {
   telephone: string;
   email?: string;
   adresse?: string;
-  numeroSecuriteSociale?: string;
   photo?: string;
+  city?: string;
+  country?: string;
+  postal_code?: string;
+  allergies?: string[];
+  antecedents?: string[];
 }
