@@ -38,7 +38,7 @@ import { AuthService } from '../../services/auth.service';
             <span class="text-base font-semibold text-gray-800">{{ getUserName() }}</span>
           </div>
         </div>
-        <button class="flex items-center justify-center bg-red-500 text-white border-none p-0 rounded-full cursor-pointer w-9 h-9 min-w-9 min-h-9 transition-all duration-300 shadow-[0_2px_6px_rgba(233,68,68,0.08)] hover:bg-red-600 hover:shadow-[0_4px_12px_rgba(233,68,68,0.18)] hover:-translate-y-0.5 hover:scale-105 focus:bg-red-600 focus:shadow-[0_4px_12px_rgba(233,68,68,0.18)] focus:-translate-y-0.5 focus:scale-105 sm:w-9 sm:h-9 sm:p-2" (click)="onLogout()" title="Se déconnecter">
+        <!-- <button class="flex items-center justify-center bg-red-500 text-white border-none p-0 rounded-full cursor-pointer w-9 h-9 min-w-9 min-h-9 transition-all duration-300 shadow-[0_2px_6px_rgba(233,68,68,0.08)] hover:bg-red-600 hover:shadow-[0_4px_12px_rgba(233,68,68,0.18)] hover:-translate-y-0.5 hover:scale-105 focus:bg-red-600 focus:shadow-[0_4px_12px_rgba(233,68,68,0.18)] focus:-translate-y-0.5 focus:scale-105 sm:w-9 sm:h-9 sm:p-2" (click)="onLogout()" title="Se déconnecter">
           <span aria-hidden="true">
             <svg class="block w-5 h-5" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M16 17L21 12L16 7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -46,7 +46,7 @@ import { AuthService } from '../../services/auth.service';
               <path d="M12 19C7.58172 19 4 15.4183 4 11C4 6.58172 7.58172 3 12 3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </span>
-        </button>
+        </button> -->
       </div>
     </div>
   `,

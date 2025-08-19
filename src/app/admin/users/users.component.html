@@ -130,101 +130,189 @@
       </div>
       
       <!-- Champs spécifiques au patient -->
-      <div *ngIf="newUser.role === 'Patient'">
-        <div class="form-group">
-          <label for="adresse">Adresse</label>
-          <textarea id="adresse" name="adresse" [(ngModel)]="newUser.adresse" rows="3"></textarea>
+      <div *ngIf="newUser.role === 'Patient'" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-2 md:col-span-2">
+          <label for="adresse" class="block text-sm font-medium text-gray-700">Adresse</label>
+          <textarea id="adresse" name="adresse" [(ngModel)]="newUser.adresse" rows="3"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1fa183] focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white resize-none"></textarea>
         </div>
         
-        <div class="form-group">
-          <label for="dateNaissance">Date de naissance</label>
-          <input type="date" id="dateNaissance" name="dateNaissance" [(ngModel)]="newUser.dateNaissance">
+        <div class="space-y-2">
+          <label for="dateNaissance" class="block text-sm font-medium text-gray-700">Date de naissance</label>
+          <input type="date" id="dateNaissance" name="dateNaissance" [(ngModel)]="newUser.dateNaissance"
+                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1fa183] focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white">
         </div>
         
-        <div class="form-group">
-          <label for="numeroSecuriteSociale">Numéro de sécurité sociale</label>
-          <input type="text" id="numeroSecuriteSociale" name="numeroSecuriteSociale" [(ngModel)]="newUser.numeroSecuriteSociale">
+        <div class="space-y-2">
+          <label for="numeroSecuriteSociale" class="block text-sm font-medium text-gray-700">Numéro de sécurité sociale</label>
+          <input type="text" id="numeroSecuriteSociale" name="numeroSecuriteSociale" [(ngModel)]="newUser.numeroSecuriteSociale"
+                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1fa183] focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white">
         </div>
       </div>
       
-      <div class="form-group">
-        <label for="statut">Statut</label>
-        <select id="statut" name="statut" [(ngModel)]="newUser.statut">
-          <option *ngFor="let statut of statuts" [value]="statut">{{ statut }}</option>
-        </select>
-      </div>
-      
-      <div class="form-group">
-        <label for="photo">Photo de profil</label>
-        <div class="photo-upload-container">
-          <div class="photo-preview">
-            <img [src]="newUser.photo || getDefaultPhoto(newUser.role)" alt="Photo de profil" class="user-photo">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-2">
+          <label for="statut" class="block text-sm font-medium text-gray-700">Statut</label>
+          <select id="statut" name="statut" [(ngModel)]="newUser.statut"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1fa183] focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white">
+            <option *ngFor="let statut of statuts" [value]="statut">{{ statut }}</option>
+          </select>
+        </div>
+        
+        <div class="space-y-2">
+          <label for="photo" class="block text-sm font-medium text-gray-700">Photo de profil</label>
+          <div class="flex items-center gap-4">
+            <div class="w-16 h-16 rounded-full overflow-hidden bg-gray-100 border-2 border-gray-200">
+              <img [src]="newUser.photo || getDefaultPhoto(newUser.role)" alt="Photo de profil" class="w-full h-full object-cover">
+            </div>
+            <div class="flex-1">
+              <input type="file" id="photo" name="photo" accept="image/*" (change)="onPhotoSelected($event, newUser)" class="hidden">
+              <label for="photo" class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all duration-200 border border-gray-300">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                Choisir une photo
+              </label>
+            </div>
           </div>
-          <input type="file" id="photo" name="photo" accept="image/*" (change)="onPhotoSelected($event, newUser)" class="photo-input">
-          <label for="photo" class="photo-upload-btn">Choisir une photo</label>
         </div>
       </div>
       
-      <div class="form-actions">
-        <button type="submit" class="btn-save">Enregistrer</button>
-        <button type="button" class="btn-cancel" (click)="cancelForm()">Annuler</button>
+      <div class="flex justify-end gap-3 pt-6 border-t border-gray-200">
+        <button type="button" (click)="cancelForm()" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 font-medium">
+          Annuler
+        </button>
+        <button type="submit" class="px-6 py-3 bg-[#1fa183] text-white rounded-lg hover:bg-[#168a73] transition-all duration-200 font-medium shadow-[0_2px_8px_rgba(31,161,131,0.2)] hover:shadow-[0_4px_12px_rgba(31,161,131,0.3)]">
+          Enregistrer
+        </button>
       </div>
     </form>
   </div>
 
   <!-- Formulaire de modification d'utilisateur -->
-  <div class="form-container" *ngIf="showEditForm && editingUser">
-    <h3>Modifier l'utilisateur</h3>
-    <form (ngSubmit)="updateUser()" #editForm="ngForm">
-      <div class="form-group">
-        <label for="edit-nom">Nom complet *</label>
-        <input type="text" id="edit-nom" name="nom" [(ngModel)]="editingUser.nom" required>
+  <div class="bg-white rounded-xl shadow-[0_4px_20px_rgba(31,161,131,0.08)] p-6 mb-6" *ngIf="showEditForm && editingUser">
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+          </svg>
+        </div>
+        <h3 class="text-xl font-semibold text-gray-800">Modifier l'utilisateur</h3>
       </div>
-      
-      <div class="form-group">
-        <label for="edit-email">Email *</label>
-        <input type="email" id="edit-email" name="email" [(ngModel)]="editingUser.email" required>
-      </div>
-      
-      <div class="form-group">
-        <label for="edit-role">Rôle *</label>
-        <select id="edit-role" name="role" [(ngModel)]="editingUser.role" required>
-          <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
-        </select>
-      </div>
-      
-      <div class="form-group">
-        <label for="edit-password">Nouveau mot de passe (laisser vide pour ne pas changer)</label>
-        <input type="password" id="edit-password" name="password" [(ngModel)]="editingUser.password" minlength="6">
-      </div>
-      
-      <div class="form-group">
-        <label for="edit-statut">Statut</label>
-        <select id="edit-statut" name="statut" [(ngModel)]="editingUser.statut">
-          <option *ngFor="let statut of statuts" [value]="statut">{{ statut }}</option>
-        </select>
-      </div>
-      
-      <div class="form-group">
-        <label for="edit-photo">Photo de profil</label>
-        <div class="photo-upload-container">
-          <div class="photo-preview">
-            <img [src]="editingUser.photo || getDefaultPhoto(editingUser.role)" alt="Photo de profil" class="user-photo">
-          </div>
-          <input type="file" id="edit-photo" name="photo" accept="image/*" (change)="onPhotoSelected($event, editingUser)" class="photo-input">
-          <label for="edit-photo" class="photo-upload-btn">Changer la photo</label>
+      <button (click)="cancelForm()" class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+    
+    <form (ngSubmit)="updateUser()" #editForm="ngForm" class="space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-2">
+          <label for="edit-nom" class="block text-sm font-medium text-gray-700">Nom complet *</label>
+          <input type="text" id="edit-nom" name="nom" [(ngModel)]="editingUser.nom" required
+                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white">
+        </div>
+        
+        <div class="space-y-2">
+          <label for="edit-email" class="block text-sm font-medium text-gray-700">Email *</label>
+          <input type="email" id="edit-email" name="email" [(ngModel)]="editingUser.email" required
+                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white">
+        </div>
+        
+        <div class="space-y-2">
+          <label for="edit-role" class="block text-sm font-medium text-gray-700">Rôle *</label>
+          <select id="edit-role" name="role" [(ngModel)]="editingUser.role" required
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white">
+            <option value="" disabled>Sélectionnez un rôle</option>
+            <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
+          </select>
+        </div>
+        
+        <div class="space-y-2">
+          <label for="edit-password" class="block text-sm font-medium text-gray-700">Nouveau mot de passe</label>
+          <input type="password" id="edit-password" name="password" [(ngModel)]="editingUser.password" minlength="6"
+                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white">
+          <p class="text-xs text-gray-500">Laisser vide pour ne pas changer</p>
+        </div>
+        
+        <div class="space-y-2">
+          <label for="edit-telephone" class="block text-sm font-medium text-gray-700">Téléphone *</label>
+          <input type="tel" id="edit-telephone" name="telephone" [(ngModel)]="editingUser.telephone" required
+                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white">
+        </div>
+        
+        <!-- Champs spécifiques au médecin -->
+        <div class="space-y-2" *ngIf="editingUser.role === 'Médecin'">
+          <label for="edit-specialite" class="block text-sm font-medium text-gray-700">Spécialité *</label>
+          <input type="text" id="edit-specialite" name="specialite" [(ngModel)]="editingUser.specialite" [required]="editingUser.role === 'Médecin'"
+                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white">
         </div>
       </div>
       
-      <div class="form-actions">
-        <button type="submit" class="btn-save">Mettre à jour</button>
-        <button type="button" class="btn-cancel" (click)="cancelForm()">Annuler</button>
+      <!-- Champs spécifiques au patient -->
+      <div *ngIf="editingUser.role === 'Patient'" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-2 md:col-span-2">
+          <label for="edit-adresse" class="block text-sm font-medium text-gray-700">Adresse</label>
+          <textarea id="edit-adresse" name="adresse" [(ngModel)]="editingUser.adresse" rows="3"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white resize-none"></textarea>
+        </div>
+        
+        <div class="space-y-2">
+          <label for="edit-dateNaissance" class="block text-sm font-medium text-gray-700">Date de naissance</label>
+          <input type="date" id="edit-dateNaissance" name="dateNaissance" [(ngModel)]="editingUser.dateNaissance"
+                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white">
+        </div>
+        
+        <div class="space-y-2">
+          <label for="edit-numeroSecuriteSociale" class="block text-sm font-medium text-gray-700">Numéro de sécurité sociale</label>
+          <input type="text" id="edit-numeroSecuriteSociale" name="numeroSecuriteSociale" [(ngModel)]="editingUser.numeroSecuriteSociale"
+                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white">
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-2">
+          <label for="edit-statut" class="block text-sm font-medium text-gray-700">Statut</label>
+          <select id="edit-statut" name="statut" [(ngModel)]="editingUser.statut"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white">
+            <option *ngFor="let statut of statuts" [value]="statut">{{ statut }}</option>
+          </select>
+        </div>
+        
+        <div class="space-y-2">
+          <label for="edit-photo" class="block text-sm font-medium text-gray-700">Photo de profil</label>
+          <div class="flex items-center gap-4">
+            <div class="w-16 h-16 rounded-full overflow-hidden bg-gray-100 border-2 border-gray-200">
+              <img [src]="editingUser.photo || getDefaultPhoto(editingUser.role)" alt="Photo de profil" class="w-full h-full object-cover">
+            </div>
+            <div class="flex-1">
+              <input type="file" id="edit-photo" name="photo" accept="image/*" (change)="onPhotoSelected($event, editingUser)" class="hidden">
+              <label for="edit-photo" class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all duration-200 border border-gray-300">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                Changer la photo
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="flex justify-end gap-3 pt-6 border-t border-gray-200">
+        <button type="button" (click)="cancelForm()" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 font-medium">
+          Annuler
+        </button>
+        <button type="submit" class="px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-all duration-200 font-medium shadow-[0_2px_8px_rgba(249,115,22,0.2)] hover:shadow-[0_4px_12px_rgba(249,115,22,0.3)]">
+          Mettre à jour
+        </button>
       </div>
     </form>
   </div>
 
   <!-- Bouton pour ajouter un utilisateur (visible seulement si aucun formulaire n'est ouvert) -->
-  <button class="btn-add-user" (click)="addUser()" *ngIf="!showAddForm && !showEditForm">
+  <!-- <button class="btn-add-user" (click)="addUser()" *ngIf="!showAddForm && !showEditForm">
     Ajouter un nouvel utilisateur
   </button>
 
@@ -235,46 +323,104 @@
         <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M20 20l-3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       </span>
     </div>
+  </div> -->
+
+  <!-- Liste des utilisateurs -->
+  <div *ngIf="!showAddForm && !showEditForm">
+    <!-- Empty state -->
+    <!-- <div *ngIf="filteredUsers.length === 0" class="bg-white rounded-xl shadow-[0_2px_12px_rgba(31,161,131,0.08)] p-12 text-center">
+      <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+        </svg>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-800 mb-2">Aucun utilisateur trouvé</h3>
+      <p class="text-gray-600 mb-4">{{ search ? 'Aucun utilisateur ne correspond à votre recherche.' : 'Commencez par ajouter votre premier utilisateur.' }}</p>
+      <button (click)="toggleAddForm()" class="px-4 py-2 bg-[#1fa183] text-white rounded-lg hover:bg-[#168a73] transition-all duration-200 font-medium">
+        Ajouter un utilisateur
+      </button>
+    </div> -->
+
+    <!-- Users grid -->
+    <div *ngIf="filteredUsers.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div *ngFor="let user of filteredUsers" class="bg-white rounded-xl shadow-[0_2px_12px_rgba(31,161,131,0.08)] p-6 hover:shadow-[0_4px_20px_rgba(31,161,131,0.12)] transition-all duration-200 border border-gray-100">
+        <!-- User header -->
+        <div class="flex items-center gap-4 mb-4">
+          <div class="w-12 h-12 rounded-full overflow-hidden bg-gray-100 border-2 border-gray-200">
+            <img [src]="user.photo || getDefaultPhoto(user.role)" [alt]="user.nom" class="w-full h-full object-cover">
+          </div>
+          <div class="flex-1 min-w-0">
+            <h4 class="text-lg font-semibold text-gray-800 truncate">{{ user.nom }}</h4>
+            <p class="text-sm text-gray-600 truncate">{{ user.email }}</p>
+          </div>
+        </div>
+        
+        <!-- User details -->
+        <div class="space-y-3 mb-4">
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-600">Rôle:</span>
+            <span [class]="getRoleClass(user.role)" class="px-2 py-1 rounded-full text-xs font-medium">
+              {{ user.role }}
+            </span>
+          </div>
+          
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-600">Statut:</span>
+            <span [class]="getStatusClass(user.statut)" class="px-2 py-1 rounded-full text-xs font-medium">
+              {{ user.statut }}
+            </span>
+          </div>
+          
+          <div *ngIf="user.telephone" class="flex items-center justify-between">
+            <span class="text-sm text-gray-600">Téléphone:</span>
+            <span class="text-sm text-gray-800">{{ user.telephone }}</span>
+          </div>
+          
+          <div *ngIf="user.specialite" class="flex items-center justify-between">
+            <span class="text-sm text-gray-600">Spécialité:</span>
+            <span class="text-sm text-gray-800">{{ user.specialite }}</span>
+          </div>
+        </div>
+        
+        <!-- Actions -->
+        <div class="flex flex-wrap gap-2">
+          <button (click)="editUser(user)" *ngIf="user.statut=='Active'" 
+                  class="flex-1 px-3 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-all duration-200 text-sm font-medium flex items-center justify-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+            </svg>
+            Modifier
+          </button>
+          
+          <button (click)="deleteUser(user)" *ngIf="user.statut=='Active' " 
+                  class="flex-1 px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all duration-200 text-sm font-medium flex items-center justify-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+            </svg>
+            Supprimer
+          </button>
+          
+          <button (click)="deactivate(user)" *ngIf="user.statut=='Active' && user.role=='Médecin'" 
+                  class="flex-1 px-3 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-all duration-200 text-sm font-medium flex items-center justify-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18 12M6 6l12 12"></path>
+            </svg>
+            Désactiver
+          </button>
+          
+          <button (click)="activate(user)" *ngIf="user.statut!='Active'" 
+                  class="flex-1 px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-200 text-sm font-medium flex items-center justify-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            Activer
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- Tableau des utilisateurs -->
-  <table class="users-table" *ngIf="!showAddForm && !showEditForm">
-    <thead>
-      <tr>
-        <th>Photo</th>
-        <th>Nom Complet</th>
-        <th>Rôle</th>
-        <th>Email</th>
-        <th>Statut</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let user of filteredUsers">
-        <td>
-          <div class="user-photo-container">
-            <img [src]="user.photo || getDefaultPhoto(user.role)" [alt]="user.nom" class="user-photo-table">
-          </div>
-        </td>
-        <td>{{ user.nom }}</td>
-        <td>{{ user.role }}</td>
-        <td><a href="mailto:{{ user.email }}">{{ user.email }}</a></td>
-        <td>
-          <span class="status-badge" [class]="'status-' + user.statut.toLowerCase()">
-            {{ user.statut }}
-          </span>
-        </td>
-        <td>
-          <button class="btn-action modif" (click)="editUser(user)" *ngIf="user.statut=='Active'">Modifier</button>
-          <button class="btn-action suppr" (click)="deleteUser(user)" *ngIf="user.statut=='Active' && user.role=='Secrétaire'">Supprimer</button>
-          <button class="btn-action desact" (click)="deactivate(user)" *ngIf="user.statut=='Active' && user.role=='Médecin'">Désactiver</button>
-          <button class="btn-action activ" (click)="activate(user)" *ngIf="user.statut!='Active'">Activer</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-
-  <div class="notifications-section" *ngIf="!showAddForm && !showEditForm">
+  <!-- <div class="notifications-section" *ngIf="!showAddForm && !showEditForm">
     <h3>Fil d'actualité & Notifications récentes</h3>
     <ul>
       <li><span class="notification-title">Nouveau Compte Médecin:</span> Ajouté par Mr. Kamdem</li>
@@ -282,5 +428,5 @@
       <li><span class="notification-title">Alerte:</span> Système de base de données à 80% de capacité</li>
       <li>15 utilisateurs en attente de validation</li>
     </ul>
-  </div>
+  </div> -->
 </div>
