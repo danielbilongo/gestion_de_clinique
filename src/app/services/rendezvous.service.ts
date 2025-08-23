@@ -8,6 +8,10 @@ import { API_CONFIG } from '../config/api.config';
   providedIn: 'root'
 })
 export class RendezvousService {
+  getUpcoming() {
+    throw new Error('Method not implemented.');
+  }
+
   constructor(private http: HttpClient) { }
 
   // Récupérer tous les rendez-vous
@@ -30,73 +34,13 @@ export class RendezvousService {
     return this.http.put<RendezVous>(`${API_CONFIG.BASE_URL}${API_CONFIG.RENDEZVOUS.UPDATE.replace('{id}', id.toString())}`, rdv);
   }
 
-  // Supprimer un rendez-vous
+  // Supprimer un rendez-vous par ID
   delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${API_CONFIG.BASE_URL}${API_CONFIG.RENDEZVOUS.DELETE.replace('{id}', id.toString())}`);
+    return this.http.delete<void>(`${API_CONFIG.BASE_URL}${API_CONFIG.RENDEZVOUS.DELETE.replace('{rendezvousId}', id.toString())}`);
   }
 
-  // Annuler un rendez-vous
+  // Annuler un rendez-vous (supposé être une suppression spéciale)
   cancel(id: number): Observable<any> {
     return this.http.delete(`${API_CONFIG.BASE_URL}${API_CONFIG.RENDEZVOUS.CANCEL.replace('{id}', id.toString())}`);
-  }
-
-  // Récupérer les rendez-vous à venir
-  getUpcoming(): Observable<RendezVous[]> {
-    return this.http.get<RendezVous[]>(`${API_CONFIG.BASE_URL}${API_CONFIG.RENDEZVOUS.UPCOMING}`);
-  }
-
-  // Récupérer les rendez-vous entre deux dates
-  getBetweenDates(start: string, end: string, medecinId?: number): Observable<RendezVous[]> {
-    let params = new HttpParams()
-      .set('start', start)
-      .set('end', end);
-    
-    if (medecinId) {
-      params = params.set('medecinId', medecinId.toString());
-    }
-    
-    return this.http.get<RendezVous[]>(`${API_CONFIG.BASE_URL}${API_CONFIG.RENDEZVOUS.BETWEEN_DATES}`, { params });
-  }
-
-  // Rechercher des rendez-vous
-  search(searchDTO: any): Observable<RendezVous[]> {
-    return this.http.post<RendezVous[]>(`${API_CONFIG.BASE_URL}${API_CONFIG.RENDEZVOUS.SEARCH}`, searchDTO);
-  }
-
-  // Méthodes de compatibilité
-  getAllRendezVous(): Observable<RendezVous[]> {
-    return this.getAll();
-  }
-
-  getRendezVousById(id: number): Observable<RendezVous> {
-    return this.getById(id);
-  }
-
-  createRendezVous(rdv: RendezVous): Observable<RendezVous> {
-    return this.create(rdv);
-  }
-
-  updateRendezVous(id: number, rdv: RendezVous): Observable<RendezVous> {
-    return this.update(id, rdv);
-  }
-
-  deleteRendezVous(id: number): Observable<void> {
-    return this.delete(id);
-  }
-
-  cancelRendezVous(id: number): Observable<any> {
-    return this.cancel(id);
-  }
-
-  getUpcomingRendezVousForMedecin(medecinId: number): Observable<RendezVous[]> {
-    return this.getUpcoming();
-  }
-
-  getRendezVousBetweenDates(startDate: string, endDate: string): Observable<RendezVous[]> {
-    return this.getBetweenDates(startDate, endDate);
-  }
-
-  searchRendezVous(searchDto: any): Observable<RendezVous[]> {
-    return this.search(searchDto);
   }
 }

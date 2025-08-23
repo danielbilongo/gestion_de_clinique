@@ -1,29 +1,102 @@
-<div class="p-4">
-  <h2 class="text-xl font-bold mb-4">Liste des prescriptions</h2>
-  <div class="mb-4">
-    <div class="relative flex items-center w-full max-w-80">
-      <input type="text" [(ngModel)]="search" placeholder="Rechercher une prescription..." class="w-full py-2.5 pr-10 pl-4 rounded-[18px] border-[1.5px] border-[#1fa183] bg-[#fcfffe] text-[#212121] text-base transition-all duration-200 shadow-[0_2px_8px_rgba(31,161,131,0.07)] focus:outline-none focus:border-[#1fa183] focus:shadow-[0_0_0_2px_rgba(31,161,131,0.2)]" />
-      <span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#1fa183] text-xl pointer-events-none opacity-85">
-        <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M20 20l-3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      </span>
-    </div>
+<app-header
+  pageTitle="Gestion des Prescriptions"
+  pageSubtitle="Ajouter, modifier ou supprimer des prescriptions">
+</app-header>
+
+<div class="p-6 max-w-4xl mx-auto">
+  <h2 class="text-2xl font-bold text-gray-800 mb-6">Gestion des Prescriptions</h2>
+
+  <div class="flex gap-3 mb-5">
+    <input type="text" [(ngModel)]="search" placeholder="Rechercher par médicament ou notes..." class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1fa183] focus:border-transparent" />
+    <button (click)="addPrescription()" class="px-4 py-2 bg-[#1fa183] text-white rounded-lg hover:bg-[#168a73] transition-colors duration-200 font-medium">+ Nouvelle Prescription</button>
   </div>
-  <table class="min-w-full bg-white rounded shadow">
+
+  <table *ngIf="!showForm" class="w-full border-collapse bg-white rounded-lg overflow-hidden shadow-[0_2px_8px_rgba(31,161,131,0.08)]">
     <thead>
-      <tr class="bg-gray-100">
-        <th class="p-2">Date</th>
-        <th class="p-2">Patient ID</th>
-        <th class="p-2">Médecin ID</th>
-        <th class="p-2">Médicaments</th>
+      <tr>
+        <th class="px-2 py-2.5 bg-[#e8f4f8] text-[#1fa183] text-left border-b border-gray-200">ID Rendez-vous</th>
+        <!-- <th class="px-2 py-2.5 bg-[#e8f4f8] text-[#1fa183] text-left border-b border-gray-200">ID Patient</th>
+        <th class="px-2 py-2.5 bg-[#e8f4f8] text-[#1fa183] text-left border-b border-gray-200">ID Médecin</th> -->
+        <th class="px-2 py-2.5 bg-[#e8f4f8] text-[#1fa183] text-left border-b border-gray-200">Date Prescription</th>
+        <th class="px-2 py-2.5 bg-[#e8f4f8] text-[#1fa183] text-left border-b border-gray-200">Médicaments</th>
+        <th class="px-2 py-2.5 bg-[#e8f4f8] text-[#1fa183] text-left border-b border-gray-200">Posologie</th>
+        <th class="px-2 py-2.5 bg-[#e8f4f8] text-[#1fa183] text-left border-b border-gray-200">Durée traitement</th>
+        <th class="px-2 py-2.5 bg-[#e8f4f8] text-[#1fa183] text-left border-b border-gray-200">Statut</th>
+        <th class="px-2 py-2.5 bg-[#e8f4f8] text-[#1fa183] text-left border-b border-gray-200">Actions</th>
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let p of filteredPrescriptions" class="border-t">
-        <td class="p-2">{{ p.date }}</td>
-        <td class="p-2">{{ p.PatientId }}</td>
-        <td class="p-2">{{ p.medecinId }}</td>
-        <td class="p-2">{{ p.medicaments }}</td>
+      <tr *ngFor="let p of filteredPrescriptions" class="border-b border-gray-200 last:border-b-0">
+        <td>{{ p.rendezvousId }}</td>
+        <td class="px-2 py-2.5">{{ p.datePrescription | date:'dd/MM/yyyy' }}</td>
+        <td>{{ p.medicaments || 'Non spécifié' }}</td>
+        <td>{{ p.posologie || 'Non spécifié' }}</td>
+        <td>{{ p.dureeTraitement || 'Non spécifié' }}</td>
+        <td class="px-2 py-2.5">{{ p.statut }}</td>
+        <td class="px-2 py-2.5">{{ p.actions }}
+          <button (click)="editPrescription(p)" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors duration-200 text-sm mr-2">Modifier</button>
+          <button (click)="deletePrescription(p.id)" class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors duration-200 text-sm">Supprimer</button>
+        </td>
+        <td>{{ p.notes || 'Aucune note' }}</td>
       </tr>
     </tbody>
   </table>
+
+  <div *ngIf="showForm" class="bg-gray-50 rounded-lg p-5 shadow max-w-md mx-auto">
+    <h3 class="text-lg font-semibold text-gray-800 mb-4">{{ isEdit ? 'Modifier' : 'Nouvelle' }} prescription</h3>
+    
+    <label class="block mb-2.5" *ngIf="selectedPrescription">
+      <span class="font-medium text-gray-700">ID Rendez-vous :</span>
+      <input type="number" [(ngModel)]="selectedPrescription.rendezvousId" class="w-full mt-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1fa183]" />
+    </label>
+    
+    <label class="block mb-2.5" *ngIf="selectedPrescription">
+      <span class="font-medium text-gray-700">ID Patient :</span>
+      <input type="number" [(ngModel)]="selectedPrescription.patientId" class="w-full mt-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1fa183]" />
+    </label>
+
+    <label class="block mb-2.5" *ngIf="selectedPrescription">
+      <span class="font-medium text-gray-700">ID Médecin :</span>
+      <input type="number" [(ngModel)]="selectedPrescription.medecinId" class="w-full mt-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1fa183]" />
+    </label>
+
+    <label class="block mb-2.5" *ngIf="selectedPrescription">
+      <span class="font-medium text-gray-700">Date de prescription :</span>
+      <input type="date" [(ngModel)]="selectedPrescription.datePrescription" class="w-full mt-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1fa183]" />
+    </label>
+
+    <label class="block mb-2.5" *ngIf="selectedPrescription">
+      <span class="font-medium text-gray-700">Médicaments :</span>
+      <textarea [(ngModel)]="selectedPrescription.medicaments" rows="3" class="w-full mt-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1fa183]"></textarea>
+    </label>
+
+    <label class="block mb-2.5" *ngIf="selectedPrescription">
+      <span class="font-medium text-gray-700">Posologie :</span>
+      <textarea [(ngModel)]="selectedPrescription.posologie" rows="2" class="w-full mt-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1fa183]"></textarea>
+    </label>
+
+    <label class="block mb-2.5" *ngIf="selectedPrescription">
+      <span class="font-medium text-gray-700">Durée traitement :</span>
+      <input [(ngModel)]="selectedPrescription.dureeTraitement" placeholder="Ex: 10 jours" class="w-full mt-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1fa183]" />
+    </label>
+
+    <label class="block mb-2.5" *ngIf="selectedPrescription">
+      <span class="font-medium text-gray-700">Statut :</span>
+      <select [(ngModel)]="selectedPrescription.statut" class="w-full mt-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1fa183]">
+        <option value="Active">Active</option>
+        <option value="Suspendue">Suspendue</option>
+        <option value="Terminée">Terminée</option>
+      </select>
+    </label>
+
+    <label class="block mb-2.5" *ngIf="selectedPrescription">
+      <span class="font-medium text-gray-700">Notes :</span>
+      <textarea [(ngModel)]="selectedPrescription.notes" rows="3" class="w-full mt-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1fa183]"></textarea>
+    </label>
+
+    <div class="flex gap-2.5 mt-4">
+      <button (click)="savePrescription()" class="px-4 py-2 bg-[#1fa183] text-white rounded-md hover:bg-[#168a73] font-medium">Enregistrer</button>
+      <button (click)="cancel()" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 font-medium">Annuler</button>
+    </div>
+  </div>
 </div>

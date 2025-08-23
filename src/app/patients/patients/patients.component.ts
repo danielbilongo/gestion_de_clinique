@@ -25,24 +25,32 @@ export class PatientsComponent implements OnInit {
     this.loadPatients();
   }
 
-  // Charger la liste des patients depuis le backend et vérifier les IDs
+  /**
+   * Charger les patients depuis le backend et filtrer ceux sans ID valide
+   */
   loadPatients(): void {
     this.patientService.getAll().subscribe({
-      next: patients => {
+      next: (patients) => {
+        // Ici on ne filtre pas sur les IDs, on prend tous les patients reçus
         this.patients = patients;
-        console.log('Patients chargés:', this.patients);
       },
-      error: err => console.error('Erreur chargement patients', err)
+      error: (err) => {
+        console.error('Erreur lors du chargement des patients', err);
+        alert('Une erreur est survenue lors du chargement des patients');
+      }
     });
   }
 
-  // Filtrer les patients selon la recherche
+  /**
+   * Filtrer les patients en fonction du champ "nom" dans la recherche
+   */
   get filteredPatients(): Patient[] {
     const term = this.search.toLowerCase();
     return this.patients.filter(p => p.nom.toLowerCase().includes(term));
   }
-
-  // Préparer formulaire ajout (sans id, qui sera généré par le backend)
+  /**
+   * Initialiser l'ajout d'un nouveau patient (sans id, créé par backend)
+   */
   addPatient(): void {
     this.selectedPatient = {
       nom: '',
@@ -58,14 +66,18 @@ export class PatientsComponent implements OnInit {
     this.showForm = true;
   }
 
-  // Préparer formulaire modification avec copie du patient existant
+  /**
+   * Initialiser la modification d'un patient en cours
+   */
   editPatient(patient: Patient): void {
     this.selectedPatient = { ...patient };
     this.isEdit = true;
     this.showForm = true;
   }
 
-  // Sauvegarder un patient (création ou mise à jour avec validation d'id)
+  /**
+   * Sauvegarder un patient : mise à jour si édition, création sinon
+   */
   savePatient(): void {
     if (!this.selectedPatient) {
       console.error('Aucun patient sélectionné');
@@ -73,8 +85,8 @@ export class PatientsComponent implements OnInit {
     }
 
     if (this.isEdit) {
-      if (this.selectedPatient.id === undefined || this.selectedPatient.id === null || this.selectedPatient.id <= 0) {
-        console.error('Impossible de mettre à jour : ID patient manquant ou invalide');
+      if (!this.selectedPatient.id || this.selectedPatient.id <= 0) {
+        console.error('ID patient manquant ou invalide pour mise à jour');
         return;
       }
       this.patientService.update(this.selectedPatient.id, this.selectedPatient).subscribe({
@@ -97,24 +109,32 @@ export class PatientsComponent implements OnInit {
     }
   }
 
-  // Supprimer un patient après vérification de l'id valide
+  /**
+   * Supprimer un patient en validant l'ID et confirmation utilisateur
+   */
   deletePatient(id?: number): void {
-    if (id === undefined || id === null || id <= 0) {
-      console.error('Impossible de supprimer : ID patient manquant ou invalide');
+    if (!id || id <= 0) {
+      console.error('ID patient manquant ou invalide');
+      alert('Impossible de supprimer le patient : ID invalide.');
       return;
     }
-
     if (!confirm('Voulez-vous vraiment supprimer ce patient ?')) {
       return;
     }
-
     this.patientService.delete(id).subscribe({
-      next: () => this.loadPatients(),
-      error: err => console.error('Erreur suppression patient', err)
+      next: () => {
+        this.loadPatients();
+      },
+      error: err => {
+        console.error('Erreur suppression patient', err);
+        alert('Erreur lors de la suppression.');
+      }
     });
   }
 
-  // Annuler ajout/modification
+  /**
+   * Annuler ajout/modification
+   */
   cancel(): void {
     this.showForm = false;
     this.selectedPatient = null;

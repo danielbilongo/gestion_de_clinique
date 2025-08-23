@@ -8,26 +8,26 @@ export const API_CONFIG = {
   MEDECIN: {
     BASE: '/api/medecin',
     ALL: '/api/medecin/all',
-    BY_ID: '/api/medecin/{id}',
+    BY_ID: '/api/medecin/{medecinId}',
     CREATE: '/api/medecin/save',
-    UPDATE: '/api/medecin/{id}',
-    DELETE: '/api/medecin/{id}'
+    UPDATE: '/api/medecin/{mececinId}',
+    DELETE: '/api/medecin/{medecinId}'
   },
   PATIENT: {
     BASE: '/api/patients',
     ALL: '/api/patients/all',
-    BY_ID: '/api/patients/{id}',
+    BY_ID: '/api/patients/{patientId}',
     CREATE: '/api/patients/save',
-    UPDATE: '/api/patients/update/{id}',
-    DELETE: '/api/patients/{id}'
+    UPDATE: '/api/patients/update/{patientId}',
+    DELETE: '/api/patients/{patientId}'
   },
   SECRETAIRE: {
     BASE: '/api/secretaire',
     ALL: '/api/secretaire/all',
-    BY_ID: '/api/secretaire/{id}',
+    BY_ID: '/api/secretaire/{secretaireId}',
     CREATE: '/api/secretaire/save',
-    UPDATE: '/api/secretaire/{id}',
-    DELETE: '/api/secretaire/{id}'
+    UPDATE: '/api/secretaire/{secretaireId}',
+    DELETE: '/api/secretaire/{secretaireId}'
   },
   PRESCRIPTION: {
     BASE: '/api/prescription',
@@ -36,8 +36,8 @@ export const API_CONFIG = {
     CREATE: '/api/prescription/create',
     UPDATE: '/api/prescription/update/{id}',
     DELETE: '/api/prescription/delete/{id}',
-    BY_RDV: '/prescription/by-rendezvous/{rendezvousId}',
-    DOWNLOAD_PDF: '/prescription/{id}/pdf'
+    BY_RDV: '/api/prescription/by-rendezvous/{rendezvousId}',
+    DOWNLOAD_PDF: '/api/prescription/{id}/pdf'
   },
   RENDEZVOUS: {
     BASE: '/api/rendezvous',
@@ -45,7 +45,7 @@ export const API_CONFIG = {
     BY_ID: '/api/rendezvous/{id}',
     CREATE: '/api/rendezvous/create',
     UPDATE: '/api/rendezvous/update/{id}',
-    DELETE: '/api/rendezvous/delete/{id}',
+    DELETE: '/api/rendezvous/delete/{rendezvousId}',
     CANCEL: '/api/rendezvous/cancel/{id}',
     UPCOMING: '/api/rendezvous/all/upcoming',
     BETWEEN_DATES: '/api/rendezvous/between-dates',

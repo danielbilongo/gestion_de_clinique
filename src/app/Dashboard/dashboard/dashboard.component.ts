@@ -1,75 +1,53 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { DashboardService, DashboardStats, RecentActivity, QuickAction, UserSummary, Alert, SystemHealth } from '../../services/dashboard.service';
 import { Subject, takeUntil } from 'rxjs';
+
+import { DashboardService, DashboardStats, RecentActivity, QuickAction, UserSummary, Alert, SystemHealth } from '../../services/dashboard.service';
+
 import { AppHeaderComponent } from '../../components/app-header/app-header.component';
 import { FooterComponent } from "../../components/app-footer/footer.component";
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.css',
+  styleUrls: ['./dashboard.component.css'],
   standalone: true,
   imports: [CommonModule, RouterModule, AppHeaderComponent, FooterComponent]
 })
 export class DashboardComponent implements OnInit, OnDestroy {
-  
-  dashboardStats: DashboardStats = {
-    totalPatients: 0,
-    totalAppointments: 0,
-    totalRevenue: 0,
-    totalUsers: 0,
-    activeAppointments: 0,
-    pendingAppointments: 0,
-    completedAppointments: 0,
-    cancelledAppointments: 0,
-    newPatientsThisMonth: 0,
-    revenueThisMonth: 0,
-    systemHealth: {
-      databaseUsage: 0,
-      serverStatus: 'online',
-      lastBackup: '',
-      activeUsers: 0,
-      systemLoad: 0
-    }
-  };
-  
+
+  // Variables pour stocker les données dynamiques
+  dashboardStats: DashboardStats = {} as DashboardStats;
   recentActivity: RecentActivity[] = [];
   quickActions: QuickAction[] = [];
   recentUsers: UserSummary[] = [];
   alerts: Alert[] = [];
-  systemHealth: SystemHealth = {
-    databaseUsage: 0,
-    serverStatus: 'online',
-    lastBackup: '',
-    activeUsers: 0,
-    systemLoad: 0
-  };
+  systemHealth: SystemHealth = {} as SystemHealth;
 
-  // États
-  loading = false;
-  error = '';
-  useDemoData = false;
+  loading = false;  // Indique si le chargement est en cours
+  error = '';       // Message d’erreur à afficher
 
-  private destroy$ = new Subject<void>();
+  private destroy$ = new Subject<void>();  // Pour gérer les désinscriptions
 
   constructor(private dashboardService: DashboardService) {}
 
-  ngOnInit() {
-    this.loadDashboardData();
+  ngOnInit(): void {
+    this.loadDashboardData();  // Chargement des données au lancement du composant
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
+    // Éviter les fuites mémoire en désabonnant toutes les observables
     this.destroy$.next();
     this.destroy$.complete();
   }
 
-  loadDashboardData() {
+  // Charge toutes les données nécessaires en parallèles
+  loadDashboardData(): void {
     this.loading = true;
     this.error = '';
 
-    // Charger toutes les données en parallèle
+    // On charge les différentes données via les méthodes spécifiques
     this.loadDashboardStats();
     this.loadRecentActivity();
     this.loadQuickActions();
@@ -78,7 +56,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.loadSystemHealth();
   }
 
-  private loadDashboardStats() {
+  private loadDashboardStats(): void {
     this.dashboardService.getDashboardStats()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -87,121 +65,103 @@ export class DashboardComponent implements OnInit, OnDestroy {
           this.systemHealth = stats.systemHealth;
           this.loading = false;
         },
-        error: (error) => {
-          console.error('Erreur lors du chargement des statistiques:', error);
-          this.error = 'Erreur lors du chargement des données';
+        error: (err) => {
+          console.error('Erreur chargement stats:', err);
+          this.error = 'Impossible de charger les statistiques.';
           this.loading = false;
         }
       });
   }
 
-  private loadRecentActivity() {
+  private loadRecentActivity(): void {
     this.dashboardService.getRecentActivity()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (activity) => {
-          this.recentActivity = activity;
-        },
-        error: (error) => {
-          console.error('Erreur lors du chargement de l\'activité récente:', error);
-        }
+        next: (activities) => this.recentActivity = activities,
+        error: (err) => console.error('Erreur chargement activité récente:', err)
       });
   }
 
-  private loadQuickActions() {
+  private loadQuickActions(): void {
     this.dashboardService.getQuickActions()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (actions) => {
-          this.quickActions = actions;
-        },
-        error: (error) => {
-          console.error('Erreur lors du chargement des actions rapides:', error);
-        }
+        next: (actions) => this.quickActions = actions,
+        error: (err) => console.error('Erreur chargement actions rapides:', err)
       });
   }
 
-  private loadRecentUsers() {
+  private loadRecentUsers(): void {
     this.dashboardService.getRecentUsers()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (users) => {
-          this.recentUsers = users;
-        },
-        error: (error) => {
-          console.error('Erreur lors du chargement des utilisateurs récents:', error);
-        }
+        next: (users) => this.recentUsers = users,
+        error: (err) => console.error('Erreur chargement utilisateurs récents:', err)
       });
   }
 
-  private loadAlerts() {
+  private loadAlerts(): void {
     this.dashboardService.getAlerts()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (alerts) => {
-          this.alerts = alerts;
-        },
-        error: (error) => {
-          console.error('Erreur lors du chargement des alertes:', error);
-        }
+        next: (alerts) => this.alerts = alerts,
+        error: (err) => console.error('Erreur chargement alertes:', err)
       });
   }
 
-  private loadSystemHealth() {
+  private loadSystemHealth(): void {
     this.dashboardService.getSystemHealth()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (health) => {
-          this.systemHealth = health;
-        },
-        error: (error) => {
-          console.error('Erreur lors du chargement de la santé du système:', error);
-        }
+        next: (health) => this.systemHealth = health,
+        error: (err) => console.error('Erreur chargement santé système:', err)
       });
   }
 
-  markAlertAsRead(alertId: string) {
+  // Gestion du clic sur "Réessayer" en cas d’erreur globale
+  retryLoad(): void {
+    this.error = '';
+    this.loadDashboardData();
+  }
+
+  // Marque une alerte spécifique comme lue
+  markAlertAsRead(alertId: string): void {
     this.dashboardService.markAlertAsRead(alertId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          // Marquer l'alerte comme lue localement
           const alert = this.alerts.find(a => a.id === alertId);
           if (alert) {
             alert.read = true;
           }
         },
-        error: (error) => {
-          console.error('Erreur lors du marquage de l\'alerte:', error);
-        }
+        error: (err) => console.error('Erreur marquage alerte:', err)
       });
   }
 
-  getUnreadAlertsCount(): number {
-    return this.alerts.filter(alert => !alert.read).length;
-  }
+  // Utilitaires pour classes CSS dynamiques
 
   getSeverityClass(severity: string): string {
-    switch (severity) {
+    switch (severity?.toLowerCase()) {
       case 'success': return 'severity-success';
       case 'warning': return 'severity-warning';
       case 'error': return 'severity-error';
       case 'info': return 'severity-info';
-      default: return 'severity-info';
+      default: return '';
     }
   }
 
   getStatusClass(status: string): string {
-    switch (status) {
+    switch (status?.toLowerCase()) {
       case 'active': return 'status-active';
       case 'inactive': return 'status-inactive';
       case 'pending': return 'status-pending';
-      default: return 'status-inactive';
+      default: return '';
     }
   }
 
   getRoleIcon(role: string): string {
-    switch (role) {
+    switch (role?.toLowerCase()) {
       case 'admin': return '👨‍💻';
       case 'medecin': return '👨‍⚕️';
       case 'secretaire': return '👩‍💼';
@@ -210,11 +170,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   getSystemStatusClass(): string {
-    switch (this.systemHealth.serverStatus) {
+    switch (this.systemHealth.serverStatus?.toLowerCase()) {
       case 'online': return 'status-online';
       case 'offline': return 'status-offline';
       case 'warning': return 'status-warning';
-      default: return 'status-offline';
+      default: return '';
     }
   }
 
@@ -222,10 +182,5 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (this.systemHealth.databaseUsage >= 90) return 'usage-critical';
     if (this.systemHealth.databaseUsage >= 80) return 'usage-warning';
     return 'usage-normal';
-  }
-
-  retryLoad() {
-    this.error = '';
-    this.loadDashboardData();
   }
 }

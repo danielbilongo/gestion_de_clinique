@@ -12,6 +12,7 @@ import { RendezvousComponent } from './rendez-vous/rendezvous/rendezvous.compone
 import { ChatComponent } from './chat/chat.component';
 import { CalendarRendezvousComponent } from './calendar-rendezvous/calendar-rendezvous.component';
 import { AuthGuard } from './guards/auth.guard';
+import { PrescriptionComponent } from './prescription/prescription/prescription.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -53,6 +54,11 @@ export const routes: Routes = [
     component: MedecinsComponent,
     canActivate: [AuthGuard]
   },  
+  { 
+    path: 'prescription', 
+    component: PrescriptionComponent,
+    canActivate: [AuthGuard]
+  },
   { 
     path: 'rendezvous', 
     component: RendezvousComponent,

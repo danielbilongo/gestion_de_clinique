@@ -35,8 +35,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
     { label: 'Tableau de Bord', icon: '🏥', route: '/dashboard-medecin', roles: ['medecin'] },
     { label: 'Patients', icon: '🧑‍🤝‍🧑', route: '/patients', roles: ['medecin'] },
     { label: 'Rendez-vous', icon: '📅', route: '/rendezvous', roles: ['medecin'] },
+    { label: 'Prescription', icon: '💊', route: '/prescription', roles: ['medecin'] },
     { label: 'Calendrier', icon: '🗓️', route: '/calendar-rdv', roles: ['medecin'] },
     { label: 'Chat', icon: '💬', route: '/chat', roles: ['medecin'] },
+
     // Secrétaire
     { label: 'Tableau de Bord', icon: '📋', route: '/dashboard-secretaire', roles: ['secretaire'] },
     { label: 'Gestion des Patients', icon: '🧑‍🤝‍🧑', route: '/patients', roles: ['secretaire'] },

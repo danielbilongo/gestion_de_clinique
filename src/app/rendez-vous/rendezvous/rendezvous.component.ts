@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AppHeaderComponent } from "../../components/app-header/app-header.component";
+import { RendezvousService } from '../../services/rendezvous.service';
+import { RendezVous } from '../../models/rendezvous.model';
 
 @Component({
   selector: 'app-rendezvous',
@@ -10,44 +12,122 @@ import { AppHeaderComponent } from "../../components/app-header/app-header.compo
   templateUrl: './rendezvous.component.html',
   styleUrls: ['./rendezvous.component.css']
 })
-export class RendezvousComponent {
-  rendezvous = [
-    { id: 1, patient: 'Paul Kamga', date: '2024-06-10', heure: '09:00', motif: 'Consultation' },
-    { id: 2, patient: 'Marie Tchoumi', date: '2024-06-10', heure: '10:30', motif: 'Suivi' }
-  ];
+export class RendezvousComponent implements OnInit {
+
+  rendezvous: RendezVous[] = [];
   search = '';
-  selectedRdv: any = null;
+  selectedRdv: RendezVous | null = null;
   showForm = false;
   isEdit = false;
 
-  get filteredRdv() {
-    return this.rendezvous.filter(r => r.patient.toLowerCase().includes(this.search.toLowerCase()));
+  constructor(private rdvService: RendezvousService) { }
+
+  ngOnInit(): void {
+    this.loadRendezvous();
   }
 
-  addRdv() {
-    this.selectedRdv = { patient: '', date: '', heure: '', motif: '' };
+  // Charger tous les rendez-vous depuis le backend
+  loadRendezvous(): void {
+    this.rdvService.getAll().subscribe({
+      next: data => {
+        this.rendezvous = data;
+      },
+      error: err => {
+        console.error('Erreur chargement rendez-vous', err);
+        alert('Erreur lors du chargement des rendez-vous');
+      }
+    });
+  }
+
+  // Filtrer la liste selon la recherche sur le patient ou le motif (exemple)
+  get filteredRdv(): RendezVous[] {
+    const term = this.search.toLowerCase();
+    return this.rendezvous.filter(r =>
+      r.motif.toLowerCase().includes(term) ||
+      r.patientId.toString().includes(term)  // ou si vous souhaitez chercher par id patient
+    );
+  }
+
+  // Préparer formulaire pour ajouter un nouveau rendez-vous
+  addRdv(): void {
+    this.selectedRdv = {
+      patientId: 0,
+      medecinId: 0,
+      secretaireId: 0,
+      dateHeureDebut: '',
+      dateHeureFin: '',
+      motif: '',
+      statut: 'Planifié',
+      salle: '',
+      notes: ''
+    };
     this.isEdit = false;
     this.showForm = true;
   }
-  editRdv(r: any) {
-    this.selectedRdv = { ...r };
+
+  // Préparer formulaire pour modifier un rendez-vous existant
+  editRdv(rdv: RendezVous): void {
+    this.selectedRdv = { ...rdv };
     this.isEdit = true;
     this.showForm = true;
   }
-  saveRdv() {
-    if (this.isEdit) {
-      const idx = this.rendezvous.findIndex(r => r.id === this.selectedRdv.id);
-      if (idx > -1) this.rendezvous[idx] = { ...this.selectedRdv };
-    } else {
-      this.selectedRdv.id = Date.now();
-      this.rendezvous.push({ ...this.selectedRdv });
+
+  // Enregistrer (créer ou mettre à jour) un rendez-vous
+  saveRdv(): void {
+    if (!this.selectedRdv) {
+      console.error('Aucun rendez-vous sélectionné');
+      return;
     }
-    this.showForm = false;
+
+    if (this.isEdit) {
+      if (!this.selectedRdv.id) {
+        console.error('ID rendez-vous manquant pour mise à jour');
+        return;
+      }
+      this.rdvService.update(this.selectedRdv.id, this.selectedRdv).subscribe({
+        next: () => {
+          this.loadRendezvous();
+          this.showForm = false;
+          this.selectedRdv = null;
+        },
+        error: err => console.error('Erreur mise à jour rendez-vous', err)
+      });
+    } else {
+      this.rdvService.create(this.selectedRdv).subscribe({
+        next: () => {
+          this.loadRendezvous();
+          this.showForm = false;
+          this.selectedRdv = null;
+        },
+        error: err => console.error('Erreur création rendez-vous', err)
+      });
+    }
   }
-  deleteRdv(id: number) {
-    this.rendezvous = this.rendezvous.filter(r => r.id !== id);
+
+  // Supprimer un rendez-vous par ID après confirmation
+  deleteRdv(id?: number): void {
+    if (!id || id <= 0) {
+      console.error('ID rendez-vous manquant ou invalide');
+      alert('Impossible de supprimer ce rendez-vous, ID invalide.');
+      return;
+    }
+    if (!confirm('Voulez-vous vraiment annuler ce rendez-vous ?')) {
+      return;
+    }
+    this.rdvService.delete(id).subscribe({
+      next: () => {
+        this.loadRendezvous();
+      },
+      error: err => {
+        console.error('Erreur suppression rendez-vous', err);
+        alert('Erreur lors de la suppression.');
+      }
+    });
   }
-  cancel() {
+
+  // Annuler l'ajout/modification
+  cancel(): void {
     this.showForm = false;
+    this.selectedRdv = null;
   }
 }

@@ -1,13 +1,13 @@
-
 export interface RendezVous {
-  id?: number;
-  patient: string;
-  medecin: string;
-  dateHeureDebut: string;
-  dateHeureFin: string;
-  duree: number;
-  salle: string;
-  motif: string;
-  statut: 'Planifié' | 'Annulé' | 'Terminé';
-  notes?: string;
+  id?: number;               
+  patientId: number;         
+  medecinId: number;         
+  secretaireId: number;      
+  dateHeureDebut: string;    
+  dateHeureFin: string;      
+  dateAnnulation?: string;   
+  motif: string;             
+  statut: 'Planifié' | 'Annulé' | 'Terminé'; 
+  salle: string;              
+  notes?: string;            
 }
