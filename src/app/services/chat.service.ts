@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { ChatMessageRequestDto, ChatMessageDto, UnreadMessageCounts } from '../models/chat.model';
-import { AuthService } from './auth.service';
+import { AuthService } from './auth.service'; // Service qui gère l’authentification / token
 import { API_CONFIG } from '../config/api.config';
 import { tap } from 'rxjs/operators';
 
@@ -11,6 +11,8 @@ import { tap } from 'rxjs/operators';
 })
 export class ChatService {
   private socket: WebSocket | null = null;
+
+  // Observables pour message et comptage non lus
   private messagesSubject = new BehaviorSubject<ChatMessageDto[]>([]);
   public messages$ = this.messagesSubject.asObservable();
 
@@ -22,31 +24,34 @@ export class ChatService {
     private authService: AuthService
   ) { }
 
-  // Initialiser la connexion WebSocket
+  // Initialise la connexion WebSocket et gère les événements
   initializeWebSocket(): void {
     if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+      // Déjà connecté
       return;
     }
 
+    // Connexion au WebSocket défini dans la config
     this.socket = new WebSocket(API_CONFIG.WEBSOCKET.URL);
 
+    // À l’ouverture, envoie le token d’authentification
     this.socket.onopen = () => {
       console.log('WebSocket connecté');
-      // Envoyer le token d'authentification
       const token = this.authService.getToken();
       if (token) {
         this.socket?.send(JSON.stringify({ type: 'auth', token }));
       }
     };
 
+    // À la réception d’un message, le traite
     this.socket.onmessage = (event) => {
       const message = JSON.parse(event.data);
       this.handleIncomingMessage(message);
     };
 
+    // Tentative de reconnexion automatique en cas de déconnexion
     this.socket.onclose = () => {
-      console.log('WebSocket déconnecté');
-      // Tentative de reconnexion après 5 secondes
+      console.log('WebSocket déconnecté, reconnexion dans 5s');
       setTimeout(() => {
         this.initializeWebSocket();
       }, 5000);
@@ -57,48 +62,50 @@ export class ChatService {
     };
   }
 
-  // Envoyer un message via WebSocket
+  // Envoie un message via WebSocket (ne fonctionne que si socket est ouverte)
   sendMessage(receiverId: number, content: string): void {
     if (this.socket && this.socket.readyState === WebSocket.OPEN) {
-      const message: ChatMessageRequestDto = {
-        receiverId,
-        content
-      };
+      const message: ChatMessageRequestDto = { receiverId, content };
       this.socket.send(JSON.stringify({ type: 'message', data: message }));
+    } else {
+      console.warn('WebSocket non connectée, message non envoyé');
     }
   }
 
-  // Marquer les messages comme lus
+  // Marque les messages reçus d’un expéditeur comme lus via API REST
   markAsRead(senderId: number): void {
-    this.http.post(`${API_CONFIG.BASE_URL}${API_CONFIG.CHAT.MARK_READ.replace('{senderId}', senderId.toString())}`, {})
-      .subscribe(() => {
-        this.updateMessageReadStatus(senderId);
-      });
+    const url = API_CONFIG.BASE_URL + (API_CONFIG.CHAT.MARK_READ?.replace('{senderId}', senderId.toString()) ?? '');
+    this.http.post(url, {}).subscribe(() => {
+      this.updateMessageReadStatus(senderId);
+    });
   }
 
-  // Récupérer une conversation
+  // Récupère une conversation complète via HTTP GET
   getConversation(otherUserId: number): Observable<ChatMessageDto[]> {
-    return this.http.get<ChatMessageDto[]>(`${API_CONFIG.BASE_URL}${API_CONFIG.CHAT.CONVERSATION.replace('{otherUserId}', otherUserId.toString())}`);
+    const url = API_CONFIG.BASE_URL + API_CONFIG.CHAT.CONVERSATION.replace('{otherUserId}', otherUserId.toString());
+    return this.http.get<ChatMessageDto[]>(url);
   }
 
-  // Récupérer les messages non lus
+  // Récupère les messages non lus via HTTP GET
   getUnreadMessages(): Observable<ChatMessageDto[]> {
-    return this.http.get<ChatMessageDto[]>(`${API_CONFIG.BASE_URL}${API_CONFIG.CHAT.UNREAD}`);
+    const url = API_CONFIG.BASE_URL + API_CONFIG.CHAT.UNREAD;
+    return this.http.get<ChatMessageDto[]>(url);
   }
 
-  // Récupérer le nombre de messages non lus par expéditeur
+  // Récupère le nombre de messages non lus par expéditeur via HTTP GET
   getUnreadMessageCounts(): Observable<UnreadMessageCounts> {
-    return this.http.get<UnreadMessageCounts>(`${API_CONFIG.BASE_URL}${API_CONFIG.CHAT.UNREAD}/counts`);
+    const url = API_CONFIG.BASE_URL + API_CONFIG.CHAT.UNREAD_COUNTS;
+    return this.http.get<UnreadMessageCounts>(url);
   }
 
-  // Charger une conversation
+  // Charge et met à jour les messages d’une conversation dans l’observable
   loadConversation(otherUserId: number): void {
     this.getConversation(otherUserId).subscribe(messages => {
       this.messagesSubject.next(messages);
     });
   }
 
-  // Déconnecter le WebSocket
+  // Déconnecte proprement le websocket
   disconnect(): void {
     if (this.socket) {
       this.socket.close();
@@ -106,28 +113,29 @@ export class ChatService {
     }
   }
 
-  // Vérifier si le WebSocket est connecté
+  // Vérifie si le websocket est ouvert
   isConnected(): boolean {
     return this.socket !== null && this.socket.readyState === WebSocket.OPEN;
   }
 
-  // Gérer les messages entrants
+  // Traite les messages reçus du websocket
   private handleIncomingMessage(message: any): void {
     if (message.type === 'chat_message') {
       const currentMessages = this.messagesSubject.value;
       const newMessage: ChatMessageDto = message.data;
       this.messagesSubject.next([...currentMessages, newMessage]);
+
     } else if (message.type === 'unread_counts') {
       this.unreadCountsSubject.next(message.data);
     }
   }
 
-  // Mettre à jour le statut de lecture des messages
+  // Met à jour localement les messages comme lus d’un expéditeur
   private updateMessageReadStatus(senderId: number): void {
     const currentMessages = this.messagesSubject.value;
-    const updatedMessages = currentMessages.map(msg => 
+    const updatedMessages = currentMessages.map(msg =>
       msg.senderId === senderId ? { ...msg, isRead: true } : msg
     );
     this.messagesSubject.next(updatedMessages);
   }
-} 
+}

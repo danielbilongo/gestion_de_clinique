@@ -26,12 +26,10 @@ export class RendezvousComponent implements OnInit {
     this.loadRendezvous();
   }
 
-  // Charger tous les rendez-vous depuis le backend
+  // Charger tous les rendez-vous
   loadRendezvous(): void {
     this.rdvService.getAll().subscribe({
-      next: data => {
-        this.rendezvous = data;
-      },
+      next: data => this.rendezvous = data,
       error: err => {
         console.error('Erreur chargement rendez-vous', err);
         alert('Erreur lors du chargement des rendez-vous');
@@ -39,16 +37,15 @@ export class RendezvousComponent implements OnInit {
     });
   }
 
-  // Filtrer la liste selon la recherche sur le patient ou le motif (exemple)
+  // Filtrer d’après le motif ou id patient
   get filteredRdv(): RendezVous[] {
     const term = this.search.toLowerCase();
     return this.rendezvous.filter(r =>
-      r.motif.toLowerCase().includes(term) ||
-      r.patientId.toString().includes(term)  // ou si vous souhaitez chercher par id patient
+      r.motif.toLowerCase().includes(term) || r.patientId.toString().includes(term)
     );
   }
 
-  // Préparer formulaire pour ajouter un nouveau rendez-vous
+  // Préparer formulaire ajout
   addRdv(): void {
     this.selectedRdv = {
       patientId: 0,
@@ -65,14 +62,14 @@ export class RendezvousComponent implements OnInit {
     this.showForm = true;
   }
 
-  // Préparer formulaire pour modifier un rendez-vous existant
+  // Préparer formulaire modification
   editRdv(rdv: RendezVous): void {
     this.selectedRdv = { ...rdv };
     this.isEdit = true;
     this.showForm = true;
   }
 
-  // Enregistrer (créer ou mettre à jour) un rendez-vous
+  // Sauvegarder (création ou mise à jour)
   saveRdv(): void {
     if (!this.selectedRdv) {
       console.error('Aucun rendez-vous sélectionné');
@@ -90,7 +87,10 @@ export class RendezvousComponent implements OnInit {
           this.showForm = false;
           this.selectedRdv = null;
         },
-        error: err => console.error('Erreur mise à jour rendez-vous', err)
+        error: err => {
+          console.error('Erreur mise à jour rendez-vous', err);
+          alert('Erreur lors de la mise à jour');
+        }
       });
     } else {
       this.rdvService.create(this.selectedRdv).subscribe({
@@ -99,12 +99,15 @@ export class RendezvousComponent implements OnInit {
           this.showForm = false;
           this.selectedRdv = null;
         },
-        error: err => console.error('Erreur création rendez-vous', err)
+        error: err => {
+          console.error('Erreur création rendez-vous', err);
+          alert('Erreur lors de la création');
+        }
       });
     }
   }
 
-  // Supprimer un rendez-vous par ID après confirmation
+  // Supprimer un rendez-vous après confirmation
   deleteRdv(id?: number): void {
     if (!id || id <= 0) {
       console.error('ID rendez-vous manquant ou invalide');
@@ -115,9 +118,7 @@ export class RendezvousComponent implements OnInit {
       return;
     }
     this.rdvService.delete(id).subscribe({
-      next: () => {
-        this.loadRendezvous();
-      },
+      next: () => this.loadRendezvous(),
       error: err => {
         console.error('Erreur suppression rendez-vous', err);
         alert('Erreur lors de la suppression.');
@@ -125,7 +126,7 @@ export class RendezvousComponent implements OnInit {
     });
   }
 
-  // Annuler l'ajout/modification
+  // Annuler ajout ou modification
   cancel(): void {
     this.showForm = false;
     this.selectedRdv = null;

@@ -8,12 +8,13 @@ export const AuthInterceptor: HttpInterceptorFn = (request: HttpRequest<unknown>
   const token = localStorage.getItem('token');
   let authRequest = request;
 
-  if (token) {
+  if (token && token !== 'null' && token !== 'undefined') {
     authRequest = request.clone({
       setHeaders: {
         Authorization: `Bearer ${token}`
       }
     });
+    console.log('Token used in request:', token);
   }
 
   return next(authRequest).pipe(

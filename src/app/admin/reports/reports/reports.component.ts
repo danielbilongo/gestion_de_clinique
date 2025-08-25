@@ -1,7 +1,18 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ReportsService, StatCard, AppointmentStats, RevenueStats, PatientStats, DoctorRanking, RecentActivity, MonthlyData, ReportFilters } from '../../../services/reports.service';
+import {
+  ReportsService,
+  StatCard,
+  AppointmentStats,
+  RevenueStats,
+  PatientStats,
+  DoctorRanking,
+  RecentActivity,
+  MonthlyData,
+  ReportFilters
+} from '../../../services/reports.service';
+
 import { Subject, takeUntil, catchError, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { AppHeaderComponent } from '../../../components/app-header/app-header.component';
@@ -14,66 +25,47 @@ import { AppHeaderComponent } from '../../../components/app-header/app-header.co
   styleUrls: ['./reports.component.css']
 })
 export class ReportsComponent implements OnInit, OnDestroy {
-  
-  // Données
+
   mainStats: StatCard[] = [];
-  appointmentStats: AppointmentStats = {
-    total: 0,
-    completed: 0,
-    cancelled: 0,
-    pending: 0,
-    today: 0
-  };
-  revenueStats: RevenueStats = {
-    monthly: 0,
-    weekly: 0,
-    daily: 0,
-    growth: 0
-  };
-  patientStats: PatientStats = {
-    total: 0,
-    newThisMonth: 0,
-    active: 0,
-    inactive: 0,
-    averageAge: 0
-  };
+  appointmentStats: AppointmentStats = { total: 0, completed: 0, cancelled: 0, pending: 0, today: 0 };
+  revenueStats: RevenueStats = { monthly: 0, weekly: 0, daily: 0, growth: 0 };
+  patientStats: PatientStats = { total: 0, newThisMonth: 0, active: 0, inactive: 0, averageAge: 0 };
   topDoctors: DoctorRanking[] = [];
   recentActivity: RecentActivity[] = [];
   monthlyData: MonthlyData[] = [];
 
-  // États
+  // Variables servant au calcul dynamique de la hauteur des barres du graphique
+  maxPatients = 1;     // Initialisé à 1 pour éviter division par 0
+  maxAppointments = 1;
+  maxRevenue = 1;
+
   loading = false;
   error = '';
   useDemoData = false;
 
-  // Filtres
   selectedPeriod = 'month';
   selectedReport = 'overview';
-  filters: ReportFilters = {
-    period: 'month'
-  };
+  filters: ReportFilters = { period: 'month' };
 
   private destroy$ = new Subject<void>();
 
   constructor(private reportsService: ReportsService) {}
 
-  ngOnInit() {
-    this.loadReports();
+  ngOnInit(): void {
+    this.loadReports(); // Chargement initial des données
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
 
-  loadReports() {
+  loadReports(): void {
     this.loading = true;
     this.error = '';
-    
-    // Mettre à jour les filtres
     this.filters.period = this.selectedPeriod;
 
-    // Charger les données depuis le backend
+    // Charger les différentes statistiques
     this.loadMainStats();
     this.loadAppointmentStats();
     this.loadRevenueStats();
@@ -83,168 +75,153 @@ export class ReportsComponent implements OnInit, OnDestroy {
     this.loadMonthlyData();
   }
 
-  private loadMainStats() {
+  private loadMainStats(): void {
     this.reportsService.getMainStats(this.filters)
       .pipe(
         takeUntil(this.destroy$),
         catchError(error => {
-          console.error('Erreur lors du chargement des statistiques principales:', error);
+          console.error('Erreur chargement stats principales:', error);
           this.useDemoData = true;
-          return this.reportsService.getDemoData().pipe(
-            map(data => data.mainStats)
-          );
+          return this.reportsService.getDemoData().pipe(map(data => data.mainStats));
         })
       )
       .subscribe({
-        next: (stats) => {
+        next: stats => {
           this.mainStats = stats;
           this.loading = false;
         },
-        error: (error) => {
-          console.error('Erreur:', error);
-          this.error = 'Erreur lors du chargement des données';
+        error: err => {
+          console.error('Erreur lors de l\'affectation des stats:', err);
+          this.error = 'Erreur lors du chargement des données principales';
           this.loading = false;
         }
       });
   }
 
-  private loadAppointmentStats() {
+  private loadAppointmentStats(): void {
     this.reportsService.getAppointmentStats(this.filters)
       .pipe(
         takeUntil(this.destroy$),
         catchError(error => {
-          console.error('Erreur lors du chargement des statistiques de rendez-vous:', error);
-          return this.reportsService.getDemoData().pipe(
-            map(data => data.appointmentStats)
-          );
+          console.error('Erreur chargement stats rendez-vous:', error);
+          return this.reportsService.getDemoData().pipe(map(data => data.appointmentStats));
         })
       )
       .subscribe({
-        next: (stats) => {
-          this.appointmentStats = stats;
-        },
-        error: (error) => {
-          console.error('Erreur:', error);
-        }
+        next: stats => this.appointmentStats = stats,
+        error: err => console.error('Erreur:', err)
       });
   }
 
-  private loadRevenueStats() {
+  private loadRevenueStats(): void {
     this.reportsService.getRevenueStats(this.filters)
       .pipe(
         takeUntil(this.destroy$),
         catchError(error => {
-          console.error('Erreur lors du chargement des statistiques de revenus:', error);
-          return this.reportsService.getDemoData().pipe(
-            map(data => data.revenueStats)
-          );
+          console.error('Erreur chargement stats revenus:', error);
+          return this.reportsService.getDemoData().pipe(map(data => data.revenueStats));
         })
       )
       .subscribe({
-        next: (stats) => {
-          this.revenueStats = stats;
-        },
-        error: (error) => {
-          console.error('Erreur:', error);
-        }
+        next: stats => this.revenueStats = stats,
+        error: err => console.error('Erreur:', err)
       });
   }
 
-  private loadPatientStats() {
+  private loadPatientStats(): void {
     this.reportsService.getPatientStats(this.filters)
       .pipe(
         takeUntil(this.destroy$),
         catchError(error => {
-          console.error('Erreur lors du chargement des statistiques de patients:', error);
-          return this.reportsService.getDemoData().pipe(
-            map(data => data.patientStats)
-          );
+          console.error('Erreur chargement stats patients:', error);
+          return this.reportsService.getDemoData().pipe(map(data => data.patientStats));
         })
       )
       .subscribe({
-        next: (stats) => {
-          this.patientStats = stats;
-        },
-        error: (error) => {
-          console.error('Erreur:', error);
-        }
+        next: stats => this.patientStats = stats,
+        error: err => console.error('Erreur:', err)
       });
   }
 
-  private loadTopDoctors() {
+  private loadTopDoctors(): void {
     this.reportsService.getTopDoctors(this.filters)
       .pipe(
         takeUntil(this.destroy$),
         catchError(error => {
-          console.error('Erreur lors du chargement du classement des médecins:', error);
-          return this.reportsService.getDemoData().pipe(
-            map(data => data.topDoctors)
-          );
+          console.error('Erreur chargement top médecins:', error);
+          return this.reportsService.getDemoData().pipe(map(data => data.topDoctors));
         })
       )
       .subscribe({
-        next: (doctors) => {
-          this.topDoctors = doctors;
-        },
-        error: (error) => {
-          console.error('Erreur:', error);
-        }
+        next: doctors => this.topDoctors = doctors,
+        error: err => console.error('Erreur:', err)
       });
   }
 
-  private loadRecentActivity() {
+  private loadRecentActivity(): void {
     this.reportsService.getRecentActivity(this.filters)
       .pipe(
         takeUntil(this.destroy$),
         catchError(error => {
-          console.error('Erreur lors du chargement de l\'activité récente:', error);
-          return this.reportsService.getDemoData().pipe(
-            map(data => data.recentActivity)
-          );
+          console.error('Erreur chargement activité récente:', error);
+          return this.reportsService.getDemoData().pipe(map(data => data.recentActivity));
         })
       )
       .subscribe({
-        next: (activity) => {
-          this.recentActivity = activity;
-        },
-        error: (error) => {
-          console.error('Erreur:', error);
-        }
+        next: activity => this.recentActivity = activity,
+        error: err => console.error('Erreur:', err)
       });
   }
 
-  private loadMonthlyData() {
+  // Chargement des données mensuelles et calcul des max pour le graphique
+  private loadMonthlyData(): void {
     this.reportsService.getMonthlyData(this.filters)
       .pipe(
         takeUntil(this.destroy$),
         catchError(error => {
-          console.error('Erreur lors du chargement des données mensuelles:', error);
-          return this.reportsService.getDemoData().pipe(
-            map(data => data.monthlyData)
-          );
+          console.error('Erreur chargement données mensuelles:', error);
+          return this.reportsService.getDemoData().pipe(map(data => data.monthlyData));
         })
       )
       .subscribe({
-        next: (data) => {
+        next: data => {
           this.monthlyData = data;
+
+          // Calcul des valeurs max pour chaque catégorie pour le scaling des barres
+          this.maxPatients = Math.max(...data.map((m: MonthlyData) => m.patients), 1); // Min 1 pour éviter X/0
+          this.maxAppointments = Math.max(...data.map((m: MonthlyData) => m.appointments), 1);
+          this.maxRevenue = Math.max(...data.map((m: MonthlyData) => m.revenue), 1);
+
+          this.loading = false;
         },
-        error: (error) => {
-          console.error('Erreur:', error);
+        error: err => {
+          console.error('Erreur:', err);
+          this.loading = false;
         }
       });
   }
 
-  generateReport() {
+  // Calcule la hauteur de barre en % selon la valeur et la catégorie
+  getBarHeightPercent(value: number, category: 'patients' | 'appointments' | 'revenue'): number {
+    switch (category) {
+      case 'patients': return (value / this.maxPatients) * 100;
+      case 'appointments': return (value / this.maxAppointments) * 100;
+      case 'revenue': return (value / this.maxRevenue) * 100;
+      default: return 0;
+    }
+  }
+
+  generateReport(): void {
     this.loading = true;
     this.reportsService.generateFullReport(this.filters)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (result) => {
+        next: result => {
           console.log('Rapport généré:', result);
           this.loading = false;
           alert('Rapport généré avec succès!');
         },
-        error: (error) => {
+        error: error => {
           console.error('Erreur lors de la génération du rapport:', error);
           this.loading = false;
           alert('Erreur lors de la génération du rapport');
@@ -252,12 +229,12 @@ export class ReportsComponent implements OnInit, OnDestroy {
       });
   }
 
-  exportReport() {
+  exportReport(): void {
     this.loading = true;
     this.reportsService.exportReport(this.filters, 'pdf')
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (blob) => {
+        next: blob => {
           const url = window.URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
@@ -268,7 +245,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
           document.body.removeChild(a);
           this.loading = false;
         },
-        error: (error) => {
+        error: error => {
           console.error('Erreur lors de l\'export:', error);
           this.loading = false;
           alert('Erreur lors de l\'export du rapport');
@@ -276,7 +253,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
       });
   }
 
-  onPeriodChange() {
+  onPeriodChange(): void {
     this.loadReports();
   }
 
@@ -289,26 +266,26 @@ export class ReportsComponent implements OnInit, OnDestroy {
   }
 
   calculateCompletionRate(): number {
-    if (this.appointmentStats.total === 0) return 0;
-    return Math.round((this.appointmentStats.completed / this.appointmentStats.total) * 100);
+    return this.appointmentStats.total === 0 ? 0 :
+      Math.round((this.appointmentStats.completed / this.appointmentStats.total) * 100);
   }
 
   calculateCancellationRate(): number {
-    if (this.appointmentStats.total === 0) return 0;
-    return Math.round((this.appointmentStats.cancelled / this.appointmentStats.total) * 100);
+    return this.appointmentStats.total === 0 ? 0 :
+      Math.round((this.appointmentStats.cancelled / this.appointmentStats.total) * 100);
   }
 
   getRevenueGrowth(): string {
     return this.revenueStats.growth >= 0 ? `+${this.revenueStats.growth}%` : `${this.revenueStats.growth}%`;
   }
 
-  retryLoad() {
+  retryLoad(): void {
     this.error = '';
     this.loadReports();
   }
 
   getStatCardClass(color: string): string {
-    switch(color) {
+    switch (color) {
       case 'blue': return 'border-blue-500';
       case 'green': return 'border-green-500';
       case 'purple': return 'border-purple-500';
@@ -320,7 +297,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
   }
 
   getStatIconClass(color: string): string {
-    switch(color) {
+    switch (color) {
       case 'blue': return 'bg-blue-100 text-blue-600';
       case 'green': return 'bg-green-100 text-green-600';
       case 'purple': return 'bg-purple-100 text-purple-600';

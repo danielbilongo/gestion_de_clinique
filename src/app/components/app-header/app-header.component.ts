@@ -2,11 +2,12 @@ import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+// import { NotificationsComponent } from '../../notifications/notifications.component';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ],
   template: `
     <div class=" sticky top-0 flex justify-between items-center py-5 px-7 bg-white  shadow-[0_2px_10px_rgba(0,0,0,0.1)] mb-7 flex-col md:flex-row gap-5 md:gap-0 my-0 z-50">
       <div class="flex items-center">
@@ -28,7 +29,11 @@ import { AuthService } from '../../services/auth.service';
         <p class="text-sm text-gray-600 m-0">{{ pageSubtitle }}</p>
       </div>
       
-      <div class="flex items-center gap-5 flex-col md:flex-row md:gap-5">
+      <div class="flex items-center gap-4">
+        <!-- Notifications -->
+        <!-- <app-notifications></app-notifications> -->
+        
+        <!-- User Profile -->
         <div class="flex items-center gap-3 flex-col md:flex-row md:gap-3">
           <div class="w-11 h-11 rounded-full overflow-hidden border-2 border-gray-300 flex items-center justify-center bg-gray-50 sm:w-10 sm:h-10">
             <img [src]="getUserPhoto()" [alt]="getUserName()" class="w-full h-full object-cover rounded-full">

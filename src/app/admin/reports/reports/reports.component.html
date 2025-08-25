@@ -306,19 +306,20 @@
           <div class="relative flex items-end gap-1 h-48 w-full max-w-16">
             <!-- Patients Bar -->
             <div class="flex-1 bg-gradient-to-t from-purple-400 to-purple-500 rounded-t-sm min-h-[4px] transition-all duration-500 hover:from-purple-500 hover:to-purple-600" 
-                 [style.height.%]="(data.patients / 200) * 100"
-                 [title]="data.patients + ' patients'"></div>
+                [style.height.%]="getBarHeightPercent(data.patients, 'patients')" 
+                [title]="data.patients + ' patients'"></div>
             <!-- Appointments Bar -->
             <div class="flex-1 bg-gradient-to-t from-blue-400 to-blue-500 rounded-t-sm min-h-[4px] transition-all duration-500 hover:from-blue-500 hover:to-blue-600" 
-                 [style.height.%]="(data.appointments / 400) * 100"
-                 [title]="data.appointments + ' rendez-vous'"></div>
+                [style.height.%]="getBarHeightPercent(data.appointments, 'appointments')" 
+                [title]="data.appointments + ' rendez-vous'"></div>
             <!-- Revenue Bar -->
             <div class="flex-1 bg-gradient-to-t from-green-400 to-green-500 rounded-t-sm min-h-[4px] transition-all duration-500 hover:from-green-500 hover:to-green-600" 
-                 [style.height.px]="(data.revenue / 1000) * 10"
-                 [title]="data.revenue + 'k FCFA'"></div>
+                [style.height.%]="getBarHeightPercent(data.revenue, 'revenue')"
+                [title]="data.revenue + 'k FCFA'"></div>
           </div>
         </div>
       </div>
+      
       
       <!-- Chart Footer -->
       <div class="mt-4 text-center">
