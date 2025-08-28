@@ -5,4 +5,5 @@ export interface Medecin {
   telephone: string;
   email: string;
   photo?: string;
+  lastLogin?: string;
 }

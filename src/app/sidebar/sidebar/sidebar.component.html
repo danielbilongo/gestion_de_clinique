@@ -25,13 +25,16 @@
       </a>
     </li>
   </ul>
-  <button type="button" class="flex items-center justify-center bg-red-500 text-white border-none p-0 rounded-full cursor-pointer w-9 h-9 min-w-9 min-h-9 transition-all duration-300 shadow-[0_2px_6px_rgba(233,68,68,0.08)] hover:bg-red-600 hover:shadow-[0_4px_12px_rgba(233,68,68,0.18)] hover:-translate-y-0.5 hover:scale-105 focus:bg-red-600 focus:shadow-[0_4px_12px_rgba(233,68,68,0.18)] focus:-translate-y-0.5 focus:scale-105 mt-auto mb-4 mx-auto" (click)="onLogout()" title="Déconnexion">
-    <span aria-hidden="true">
-      <svg class="block w-5 h-5" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M16 17L21 12L16 7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M21 12H9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M12 19C7.58172 19 4 15.4183 4 11C4 6.58172 7.58172 3 12 3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </span>
-  </button>
+  <button
+  type="button"
+  class="w-full flex items-center justify-center gap-2 bg-red-500 text-white border-none px-4 py-2 rounded-xl cursor-pointer transition-all duration-300 shadow-[0_2px_6px_rgba(233,68,68,0.08)] hover:bg-red-600 hover:shadow-[0_4px_12px_rgba(233,68,68,0.18)] mt-auto mb-4"
+  (click)="onLogout()" title="Déconnexion">
+  <span>Déconnexion</span>
+  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24">
+    <path d="M16 17L21 12L16 7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M21 12H9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M12 19C7.58172 19 4 15.4183 4 11C4 6.58172 7.58172 3 12 3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+</button>
+
 </div>

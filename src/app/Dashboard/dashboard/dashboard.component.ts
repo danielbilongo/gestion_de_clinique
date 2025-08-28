@@ -113,8 +113,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.dashboardService.getSystemHealth()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (health) => this.systemHealth = health,
-        error: (err) => console.error('Erreur chargement santé système:', err)
+        next: (health: SystemHealth) => this.systemHealth = health,
+        error: (err: any) => console.error('Erreur chargement santé système:', err)
       });
   }
 

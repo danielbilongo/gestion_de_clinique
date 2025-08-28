@@ -1,69 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { catchError } from 'rxjs/operators';
-import { of } from 'rxjs';
+import { forkJoin, Observable, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 import { API_CONFIG } from '../config/api.config';
+import { RendezvousService } from './rendezvous.service';
+import { MedecinService } from './medecin.service';
+import { PatientService } from './patient.service';
 
-export interface DashboardStats {
-  totalPatients: number;
-  totalAppointments: number;
-  totalRevenue: number;
-  totalUsers: number;
-  activeAppointments: number;
-  pendingAppointments: number;
-  completedAppointments: number;
-  cancelledAppointments: number;
-  newPatientsThisMonth: number;
-  revenueThisMonth: number;
-  systemHealth: SystemHealth;
-}
-
-export interface SystemHealth {
-  databaseUsage: number;
-  serverStatus: 'online' | 'offline' | 'warning';
-  lastBackup: string;
-  activeUsers: number;
-  systemLoad: number;
-}
-
-export interface RecentActivity {
-  id: string;
-  type: 'user_created' | 'user_updated' | 'appointment_created' | 'payment_received' | 'system_alert';
-  title: string;
-  description: string;
-  timestamp: string;
-  severity: 'info' | 'warning' | 'error' | 'success';
-  icon: string;
-}
-
-export interface QuickAction {
-  id: string;
-  title: string;
-  description: string;
-  icon: string;
-  route: string;
-  color: string;
-}
-
-export interface UserSummary {
-  id: string;
-  name: string;
-  role: 'admin' | 'medecin' | 'secretaire';
-  status: 'active' | 'inactive' | 'pending';
-  lastLogin: string;
-  avatar?: string;
-}
-
-export interface Alert {
-  id: string;
-  type: 'info' | 'warning' | 'error' | 'success';
-  title: string;
-  message: string;
-  timestamp: string;
-  read: boolean;
-}
+// Vos interfaces restent les mêmes...
 
 @Injectable({
   providedIn: 'root'
@@ -71,80 +15,196 @@ export interface Alert {
 export class DashboardService {
   private apiUrl = `${API_CONFIG.BASE_URL}/api`;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private patientService: PatientService,
+    private medecinService: MedecinService,
+    private rendezvousService: RendezvousService
+  ) {}
 
   // Récupérer les statistiques principales du dashboard
   getDashboardStats(): Observable<DashboardStats> {
-    return this.http.get<DashboardStats>(`${this.apiUrl}/dashboard/stats`)
-      .pipe(
-        catchError(error => {
-          console.error('Erreur lors du chargement des statistiques:', error);
-          return of(this.getDemoDashboardStats());
-        })
-      );
+    return forkJoin({
+      patients: this.patientService.getAll(),
+      medecins: this.medecinService.getAll(),
+      rendezvous: this.rendezvousService.getAll()
+    }).pipe(
+      map(({ patients, medecins, rendezvous }) => {
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+
+        // Calculer les nouveaux patients ce mois-ci
+        const newPatientsThisMonth = patients.filter(patient => {
+          if (!patient.dateCreation) return false;
+          const createdDate = new Date(patient.dateCreation);
+          return createdDate.getMonth() === currentMonth && 
+                 createdDate.getFullYear() === currentYear;
+        }).length;
+
+        // Compter les rendez-vous par statut
+        const activeAppointments = rendezvous.filter(r => 
+          r.statut === 'Planifié' 
+        ).length;
+
+       
+
+        const completedAppointments = rendezvous.filter(r => 
+          r.statut === 'Terminé'
+        ).length;
+
+        const cancelledAppointments = rendezvous.filter(r => 
+          r.statut === 'Annulé'
+        ).length;
+
+        return {
+          totalPatients: patients.length,
+          totalAppointments: rendezvous.length,
+          totalRevenue: this.calculateRevenue(rendezvous),
+          totalUsers: medecins.length,
+          activeAppointments,
+          pendingAppointments,
+          completedAppointments,
+          cancelledAppointments,
+          newPatientsThisMonth,
+          revenueThisMonth: this.calculateMonthlyRevenue(rendezvous),
+          systemHealth: this.getDemoSystemHealth() // Utilisez getDemoSystemHealth() en attendant
+        };
+      }),
+      catchError(error => {
+        console.error('Erreur lors du chargement des statistiques:', error);
+        return of(this.getDemoDashboardStats());
+      })
+    );
   }
 
-  // Récupérer l'activité récente
+  private calculateRevenue(rendezvous: any[]): number {
+    // Implémentez la logique de calcul basée sur les rendez-vous
+    return rendezvous.filter(r => r.statut === 'Terminé').length * 5000;
+  }
+
+  private calculateMonthlyRevenue(rendezvous: any[]): number {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    
+    const monthlyRendezVous = rendezvous.filter(r => {
+      if (!r.dateHeureDebut) return false;
+      const rdvDate = new Date(r.dateHeureDebut);
+      return rdvDate.getMonth() === currentMonth && 
+             rdvDate.getFullYear() === currentYear &&
+             r.statut === 'Terminé';
+    });
+    return monthlyRendezVous.length * 5000;
+  }
+  
   getRecentActivity(): Observable<RecentActivity[]> {
-    return this.http.get<RecentActivity[]>(`${this.apiUrl}/dashboard/recent-activity`)
-      .pipe(
-        catchError(error => {
-          console.error('Erreur lors du chargement de l\'activité récente:', error);
-          return of(this.getDemoRecentActivity());
-        })
-      );
+    return forkJoin({
+      patients: this.patientService.getAll(),
+      rendezvous: this.rendezvousService.getAll()
+    }).pipe(
+      map(({ patients, rendezvous }) => {
+        const activities: RecentActivity[] = [];
+        
+        // Derniers patients ajoutés
+        const recentPatients = patients
+          .sort((a, b) => new Date(b.dateCreation || 0).getTime() - new Date(a.dateCreation || 0).getTime())
+          .slice(0, 3);
+        
+        recentPatients.forEach(patient => {
+          activities.push({
+            id: `patient-${patient.id}`,
+            type: 'user_created',
+            title: 'Nouveau Patient',
+            description: `${patient.prenom} ${patient.nom} ajouté`,
+            timestamp: this.formatTimeAgo(patient.dateCreation),
+            severity: 'success',
+            icon: '👤'
+          });
+        });
+        
+        // Derniers rendez-vous
+        const recentRendezVous = rendezvous
+          .sort((a, b) => new Date(b.dateHeureDebut || 0).getTime() - new Date(a.dateHeureDebut || 0).getTime())
+          .slice(0, 2);
+        
+        recentRendezVous.forEach(rdv => {
+          activities.push({
+            id: `rdv-${rdv.id}`,
+            type: 'appointment_created',
+            title: 'Nouveau Rendez-vous',
+            description: `RDV pour le patient #${rdv.patientId}`,
+            timestamp: this.formatTimeAgo(rdv.dateHeureDebut),
+            severity: 'info',
+            icon: '📅'
+          });
+        });
+        
+        return activities;
+      }),
+      catchError(error => {
+        console.error('Erreur lors du chargement de l\'activité récente:', error);
+        return of(this.getDemoRecentActivity()); // Correction: utiliser getDemoRecentActivity()
+      })
+    );
   }
 
-  // Récupérer les actions rapides
-  getQuickActions(): Observable<QuickAction[]> {
-    return this.http.get<QuickAction[]>(`${this.apiUrl}/dashboard/quick-actions`)
-      .pipe(
-        catchError(error => {
-          console.error('Erreur lors du chargement des actions rapides:', error);
-          return of(this.getDemoQuickActions());
-        })
-      );
-  }
-
-  // Récupérer les utilisateurs récents
   getRecentUsers(): Observable<UserSummary[]> {
-    return this.http.get<UserSummary[]>(`${this.apiUrl}/dashboard/recent-users`)
-      .pipe(
-        catchError(error => {
-          console.error('Erreur lors du chargement des utilisateurs récents:', error);
-          return of(this.getDemoRecentUsers());
-        })
-      );
+    return this.medecinService.getAll().pipe(
+      map(medecins => {
+        return medecins
+          .sort((a, b) => new Date(b.lastLogin || 0).getTime() - new Date(a.lastLogin || 0).getTime())
+          .slice(0, 4)
+          .map(medecin => ({
+            id: medecin.id?.toString() || '',
+            name: `${medecin.prenom} ${medecin.nom}`,
+            role: 'medecin',
+            status: 'active',
+            lastLogin: this.formatTimeAgo(medecin.lastLogin),
+            avatar: '👨‍⚕️'
+          }));
+      }),
+      catchError(error => {
+        console.error('Erreur lors du chargement des utilisateurs récents:', error);
+        return of(this.getDemoRecentUsers()); // Correction: utiliser getDemoRecentUsers()
+      })
+    );
   }
 
-  // Récupérer les alertes
+  private formatTimeAgo(dateString: string | undefined): string {
+    if (!dateString) return 'Date inconnue';
+    
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.round(diffMs / (1000 * 60));
+    const diffHours = Math.round(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+    
+    if (diffMins < 60) return `Il y a ${diffMins} min`;
+    if (diffHours < 24) return `Il y a ${diffHours} h`;
+    if (diffDays < 7) return `Il y a ${diffDays} j`;
+    
+    return date.toLocaleDateString();
+  }
+  
+  getQuickActions(): Observable<QuickAction[]> {
+    return of(this.getDemoQuickActions());
+  }
+
   getAlerts(): Observable<Alert[]> {
-    return this.http.get<Alert[]>(`${this.apiUrl}/dashboard/alerts`)
-      .pipe(
-        catchError(error => {
-          console.error('Erreur lors du chargement des alertes:', error);
-          return of(this.getDemoAlerts());
-        })
-      );
+    return of(this.getDemoAlerts());
   }
 
-  // Marquer une alerte comme lue
   markAlertAsRead(alertId: string): Observable<any> {
-    return this.http.patch(`${this.apiUrl}/dashboard/alerts/${alertId}/read`, {});
+    return of({ success: true }); // Simulation
   }
 
-  // Récupérer la santé du système
   getSystemHealth(): Observable<SystemHealth> {
-    return this.http.get<SystemHealth>(`${this.apiUrl}/dashboard/system-health`)
-      .pipe(
-        catchError(error => {
-          console.error('Erreur lors du chargement de la santé du système:', error);
-          return of(this.getDemoSystemHealth());
-        })
-      );
+    return of(this.getDemoSystemHealth());
   }
 
-  // Données de démonstration
+  // Méthodes de démonstration
   private getDemoDashboardStats(): DashboardStats {
     return {
       totalPatients: 1250,
@@ -189,24 +249,35 @@ export class DashboardService {
         timestamp: 'Il y a 6h',
         severity: 'success',
         icon: '📅'
+      }
+    ];
+  }
+
+  private getDemoRecentUsers(): UserSummary[] {
+    return [
+      {
+        id: '1',
+        name: 'Dr. Louis Kamdem',
+        role: 'medecin',
+        status: 'active',
+        lastLogin: 'Il y a 2h',
+        avatar: '👨‍⚕️'
       },
       {
-        id: '4',
-        type: 'payment_received',
-        title: 'Paiement reçu',
-        description: '25,000 FCFA - Consultation Dr. Louis',
-        timestamp: 'Il y a 8h',
-        severity: 'success',
-        icon: '💳'
+        id: '2',
+        name: 'Mme. Marie Dupont',
+        role: 'secretaire',
+        status: 'active',
+        lastLogin: 'Il y a 4h',
+        avatar: '👩‍💼'
       },
       {
-        id: '5',
-        type: 'system_alert',
-        title: 'Alerte système',
-        description: 'Base de données à 80% de capacité',
-        timestamp: 'Il y a 12h',
-        severity: 'warning',
-        icon: '⚠️'
+        id: '3',
+        name: 'Dr. John Smith',
+        role: 'medecin',
+        status: 'active',
+        lastLogin: 'Il y a 6h',
+        avatar: '👨‍⚕️'
       }
     ];
   }
@@ -248,43 +319,6 @@ export class DashboardService {
     ];
   }
 
-  private getDemoRecentUsers(): UserSummary[] {
-    return [
-      {
-        id: '1',
-        name: 'Dr. Louis Kamdem',
-        role: 'medecin',
-        status: 'active',
-        lastLogin: 'Il y a 2h',
-        avatar: '👨‍⚕️'
-      },
-      {
-        id: '2',
-        name: 'Mme. Marie Dupont',
-        role: 'secretaire',
-        status: 'active',
-        lastLogin: 'Il y a 4h',
-        avatar: '👩‍💼'
-      },
-      {
-        id: '3',
-        name: 'Dr. John Smith',
-        role: 'medecin',
-        status: 'active',
-        lastLogin: 'Il y a 6h',
-        avatar: '👨‍⚕️'
-      },
-      {
-        id: '4',
-        name: 'M. Pierre Martin',
-        role: 'admin',
-        status: 'active',
-        lastLogin: 'Il y a 8h',
-        avatar: '👨‍💻'
-      }
-    ];
-  }
-
   private getDemoAlerts(): Alert[] {
     return [
       {
@@ -302,14 +336,6 @@ export class DashboardService {
         message: 'Nouvelle version disponible',
         timestamp: 'Il y a 1j',
         read: true
-      },
-      {
-        id: '3',
-        type: 'success',
-        title: 'Sauvegarde',
-        message: 'Sauvegarde automatique réussie',
-        timestamp: 'Il y a 2j',
-        read: true
       }
     ];
   }
@@ -323,4 +349,4 @@ export class DashboardService {
       systemLoad: 65
     };
   }
-} 
+}

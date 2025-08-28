@@ -1,4 +1,5 @@
 export interface Patient {
+  dateCreation?: string;
   id?: number;
   nom: string;
   prenom: string;
@@ -13,4 +14,5 @@ export interface Patient {
   postal_code?: string;
   allergies?: string[];
   antecedents?: string[];
+  
 }
