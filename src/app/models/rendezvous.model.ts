@@ -7,7 +7,7 @@ export interface RendezVous {
   dateHeureFin: string;      
   dateAnnulation?: string;   
   motif: string;             
-  statut: 'Planifié' | 'Annulé' | 'Terminé'; 
+  statut: 'Planifié' | 'Annulé' | 'Terminé' | 'En attente'; 
   salle: string;              
   notes?: string;            
 }

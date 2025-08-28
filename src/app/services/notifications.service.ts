@@ -76,4 +76,39 @@ export class NotificationsService {
     const unread = notifs.filter(n => !n.isRead).length;
     this.unreadCountSubject.next(unread); // ✅ Jamais null, toujours un nombre
   }
+
+  /** 🗑️ Supprimer une notification */
+  deleteNotification(id: number) {
+    const updated = this.notificationsSubject.value.filter(n => n.id !== id);
+    this.notificationsSubject.next(updated);
+    this.updateUnreadCount(updated);
+  }
+
+  /** 🗑️ Supprimer toutes les notifications */
+  deleteAllNotifications() {
+    this.notificationsSubject.next([]);
+    this.unreadCountSubject.next(0);
+  }
+
+  /** 🔍 Filtrer les notifications par type */
+  getNotificationsByType(type: 'info' | 'warning' | 'success' | 'error') {
+    return this.notificationsSubject.value.filter(n => n.type === type);
+  }
+
+  /** 🔔 Générer une nouvelle notification avec ID unique */
+  createNotification(objMessage: string, message: string, type: 'info' | 'warning' | 'success' | 'error'): Notification {
+    const currentNotifications = this.notificationsSubject.value;
+    const maxId = currentNotifications.length > 0 
+      ? Math.max(...currentNotifications.map(n => n.id)) 
+      : 0;
+    
+    return {
+      id: maxId + 1,
+      objMessage,
+      message,
+      timestamp: new Date(),
+      isRead: false,
+      type
+    };
+  }
 }

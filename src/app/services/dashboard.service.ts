@@ -7,7 +7,65 @@ import { RendezvousService } from './rendezvous.service';
 import { MedecinService } from './medecin.service';
 import { PatientService } from './patient.service';
 
-// Vos interfaces restent les mêmes...
+// Interfaces pour le dashboard
+export interface DashboardStats {
+  totalPatients: number;
+  totalAppointments: number;
+  totalRevenue: number;
+  totalUsers: number;
+  activeAppointments: number;
+  pendingAppointments: number;
+  completedAppointments: number;
+  cancelledAppointments: number;
+  newPatientsThisMonth: number;
+  revenueThisMonth: number;
+  systemHealth: SystemHealth;
+}
+
+export interface SystemHealth {
+  databaseUsage: number;
+  serverStatus: string;
+  lastBackup: string;
+  activeUsers: number;
+  systemLoad: number;
+}
+
+export interface RecentActivity {
+  id: string;
+  type: string;
+  title: string;
+  description: string;
+  timestamp: string;
+  severity: string;
+  icon: string;
+}
+
+export interface UserSummary {
+  id: string;
+  name: string;
+  role: string;
+  status: string;
+  lastLogin: string;
+  avatar: string;
+}
+
+export interface QuickAction {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  route: string;
+  color: string;
+}
+
+export interface Alert {
+  id: string;
+  type: string;
+  title: string;
+  message: string;
+  timestamp: string;
+  read: boolean;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -47,7 +105,9 @@ export class DashboardService {
           r.statut === 'Planifié' 
         ).length;
 
-       
+        const pendingAppointments = rendezvous.filter(r => 
+          r.statut === 'En attente'
+        ).length;
 
         const completedAppointments = rendezvous.filter(r => 
           r.statut === 'Terminé'

@@ -2,7 +2,7 @@ import { Component, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { Notification, NotificationsService } from '../services/notifications.service';
-import { trigger, style, animate, transition } from '@angular/animations';
+import { trigger, style, animate, transition, keyframes, query, stagger } from '@angular/animations';
 
 
 @Component({
@@ -19,8 +19,21 @@ import { trigger, style, animate, transition } from '@angular/animations';
       transition(':leave', [
         animate('150ms ease-in', style({ opacity: 0, transform: 'translateY(-20px)' }))
       ])
+    ]),
+    trigger('notificationAnimation', [
+      transition('* => *', [
+        query(':enter', [
+          style({ opacity: 0, transform: 'translateX(50px)' }),
+          stagger('100ms', [
+            animate('300ms ease-out', keyframes([
+              style({ opacity: 0, transform: 'translateX(50px)', offset: 0 }),
+              style({ opacity: 1, transform: 'translateX(-5px)', offset: 0.7 }),
+              style({ opacity: 1, transform: 'translateX(0)', offset: 1.0 })
+            ]))
+          ])
+        ], { optional: true })
+      ])
     ])
-  ]
 })
 export class NotificationsComponent {
   showNotifications = false;        // Indique si le panneau de notifications est affiché
@@ -63,6 +76,32 @@ export class NotificationsComponent {
       case 'error': return '#EF4444';    // rouge
       default: return '#6B7280';         // gris
     }
+  }
+
+  /** 🎨 Renvoie la couleur de fond selon le type de notification */
+  getNotificationColorBg(notif: Notification): string {
+    switch (notif.type) {
+      case 'info': return '#3B82F6';     // bleu
+      case 'warning': return '#F59E0B';  // orange
+      case 'success': return '#10B981';  // vert
+      case 'error': return '#EF4444';    // rouge
+      default: return '#6B7280';         // gris
+    }
+  }
+
+  /** ✅ Marque une notification comme lue */
+  markAsRead(id: number): void {
+    this.notificationsService.markAsRead(id);
+  }
+
+  /** 🗑️ Supprime une notification */
+  deleteNotification(id: number): void {
+    this.notificationsService.deleteNotification(id);
+  }
+
+  /** 🗑️ Supprime toutes les notifications */
+  deleteAllNotifications(): void {
+    this.notificationsService.deleteAllNotifications();
   }
 
   /** 🖱️ Écoute le clic sur le document pour fermer le panneau si on clique en dehors */
